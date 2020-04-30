@@ -21,4 +21,13 @@ This project contain 5 orderer with 3 ca and 4 peers network.Still work in proge
 
 
 * To remove the unsued volume
-  `docker system prune --volumes`
+    `docker system prune --volumes`
+
+* To create the channel Tx and Anchor Tx inside the channel-artifacts
+    `bash scripts/channel.sh`
+
+* Peer will join the channel
+    `bash scripts/joinchannel.sh`
+
+
+Note: Before running the join channel command, you need to run the docker container
