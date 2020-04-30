@@ -82,9 +82,9 @@ ca:
   # Name of this CA
   name: OrdererCA
   # Key file (is only used to import a private key into BCCSP)
-  keyfile: ./hyperledger-fabric-2.0/organizations/ordererOrganizations/avantas.com/ca/priv_sk
+  keyfile:
   # Certificate file (default: ca-cert.pem)
-  certfile: ./hyperledger-fabric-2.0/organizations/ordererOrganizations/avantas.com/ca/ca.avantas.com-cert.pem
+  certfile:
   # Chain file
   chainfile:
 
@@ -301,16 +301,16 @@ signing:
 #     CA certificates though it can still issue end entity certificates.
 ###########################################################################
 csr:
-   cn: ca.avantas.com
+   cn: ca.example.com
    names:
       - C: US
         ST: "New York"
         L: "New York"
-        O: avantas.com
+        O: example.com
         OU:
    hosts:
      - localhost
-     - avantas.com
+     - example.com
    ca:
       expiry: 131400h
       pathlength: 1

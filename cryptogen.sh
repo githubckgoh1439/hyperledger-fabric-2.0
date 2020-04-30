@@ -29,3 +29,5 @@ export VERBOSE=false
 
 
 ./bin/cryptogen generate --config=./organizations/cryptogen/crypto-config-orderer.yaml --output="organizations"
+
+# Create Organziation crypto material using cryptogen or CAs

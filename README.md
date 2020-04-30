@@ -1,5 +1,4 @@
 # hyperledger-fabric-2.0
-### goh version 
 
 This project contain 5 orderer with 3 ca and 4 peers network.Still work in progess
 
@@ -7,7 +6,11 @@ This project contain 5 orderer with 3 ca and 4 peers network.Still work in proge
 
 * Create the crypto file using the below command
 
-    `./cryptogen.sh`
+    `bash ./cryptogen.sh`
+
+* Create the genesis file using the below command
+
+    `bash ./configtx.sh`
 
 * Run the docker-compose which contains all network
 
@@ -15,4 +18,7 @@ This project contain 5 orderer with 3 ca and 4 peers network.Still work in proge
 
 * To stop the container use below command
     `docker-compose -f ./docker/docker-compose-raft.yaml down`
+
+* To remove the unsued volume
+  `docker system prune --volumes`
 

@@ -20,7 +20,7 @@ fi
 createChannelTx() {
 
 	set -x
-	././bin/configtxgen -profile TwoOrgsChannel -outputCreateChannelTx ./channel-artifacts/${CHANNEL_NAME}.tx -channelID $CHANNEL_NAME
+	configtxgen -profile TwoOrgsChannel -outputCreateChannelTx ./channel-artifacts/${CHANNEL_NAME}.tx -channelID $CHANNEL_NAME
 	res=$?
 	set +x
 	if [ $res -ne 0 ]; then
@@ -37,7 +37,7 @@ createAncorPeerTx() {
 
 	echo "#######    Generating anchor peer update for ${orgmsp}  ##########"
 	set -x
-	././bin/configtxgen -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/${orgmsp}anchors.tx -channelID $CHANNEL_NAME -asOrg ${orgmsp}
+	configtxgen -profile TwoOrgsChannel -outputAnchorPeersUpdate ./channel-artifacts/${orgmsp}anchors.tx -channelID $CHANNEL_NAME -asOrg ${orgmsp}
 	res=$?
 	set +x
 	if [ $res -ne 0 ]; then
@@ -56,7 +56,7 @@ createChannel() {
 	while [ $rc -ne 0 -a $COUNTER -lt $MAX_RETRY ] ; do
 		sleep $DELAY
 		set -x
-		././bin/peer channel create -o localhost:7050 -c $CHANNEL_NAME --ordererTLSHostnameOverride orderer.avantas.com -f ./channel-artifacts/${CHANNEL_NAME}.tx --outputBlock ./channel-artifacts/${CHANNEL_NAME}.block --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA >&log.txt
+		peer channel create -o localhost:7050 -c $CHANNEL_NAME --ordererTLSHostnameOverride orderer.example.com -f ./channel-artifacts/${CHANNEL_NAME}.tx --outputBlock ./channel-artifacts/${CHANNEL_NAME}.block --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA >&log.txt
 		res=$?
 		set +x
 		let rc=$res
@@ -79,7 +79,7 @@ joinChannel() {
 	while [ $rc -ne 0 -a $COUNTER -lt $MAX_RETRY ] ; do
     sleep $DELAY
     set -x
-    ././bin/peer channel join -b ./channel-artifacts/$CHANNEL_NAME.block >&log.txt
+    peer channel join -b ./channel-artifacts/$CHANNEL_NAME.block >&log.txt
     res=$?
     set +x
 		let rc=$res
@@ -99,7 +99,7 @@ updateAnchorPeers() {
 	while [ $rc -ne 0 -a $COUNTER -lt $MAX_RETRY ] ; do
     sleep $DELAY
     set -x
-		././bin/peer channel update -o localhost:7050 --ordererTLSHostnameOverride orderer.avantas.com -c $CHANNEL_NAME -f ./channel-artifacts/${CORE_PEER_LOCALMSPID}anchors.tx --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA >&log.txt
+		peer channel update -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com -c $CHANNEL_NAME -f ./channel-artifacts/${CORE_PEER_LOCALMSPID}anchors.tx --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA >&log.txt
     res=$?
     set +x
 		let rc=$res
@@ -130,7 +130,7 @@ createChannelTx
 echo "### Generating channel configuration transaction '${CHANNEL_NAME}.tx' ###"
 createAncorPeerTx
 
-FABRIC_CFG_PATH=$PWD/config/
+FABRIC_CFG_PATH=$PWD/../config/
 
 ## Create channel
 echo "Creating channel "$CHANNEL_NAME
