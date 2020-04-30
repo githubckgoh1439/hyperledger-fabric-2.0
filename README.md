@@ -19,6 +19,6 @@ This project contain 5 orderer with 3 ca and 4 peers network.Still work in proge
 * To stop the container use below command
     `docker-compose -f ./docker/docker-compose-raft.yaml down`
 
-
 * To remove the unsued volume
   `docker system prune --volumes`
+
