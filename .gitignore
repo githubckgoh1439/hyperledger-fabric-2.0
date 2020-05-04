@@ -1,7 +1,7 @@
-.cache
-.DS_Store
-**/node_modules
-*.env
-*.sh
+*~
+*#
+.#*
+# Vim file artifacts
+.*.sw*
 
-**/organizations
+vendor/

@@ -1,5 +1,4 @@
 # hyperledger-fabric-2.0
-### develop branch
 
 This project contain 5 orderer with 3 ca and 4 peers network.Still work in progess
 
@@ -20,6 +19,18 @@ This project contain 5 orderer with 3 ca and 4 peers network.Still work in proge
 * To stop the container use below command
     `docker-compose -f ./docker/docker-compose-raft.yaml down`
 
-* To remove the unsued volume
-  `docker system prune --volumes`
 
+* To remove the unsued volume
+    `docker system prune --volumes`
+
+* To create the channel Tx and Anchor Tx inside the channel-artifacts
+    `bash scripts/channel/channel.sh`
+
+* Peer will join the channel
+    `bash scripts/channel/peer-join-channel.sh`
+
+* Anchor-Peer update the channel
+    `bash scripts/channel/update-Anchor.sh`
+
+
+Note: Before running the join channel command, you need to run the docker container
