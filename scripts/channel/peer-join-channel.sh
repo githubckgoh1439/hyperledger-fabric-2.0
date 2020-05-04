@@ -6,8 +6,8 @@ VERBOSE="$4"
 : ${DELAY:="3"}
 : ${MAX_RETRY:="5"}
 : ${VERBOSE:="false"}
-export FABRIC_CFG_PATH=${PWD}/config
 
+export FABRIC_CFG_PATH=$PWD/config/
 # import utils
 . scripts/envVar.sh
 
