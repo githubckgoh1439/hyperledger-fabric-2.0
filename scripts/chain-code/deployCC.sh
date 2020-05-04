@@ -13,11 +13,11 @@ VERBOSE="$6"
 : ${VERBOSE:="false"}
 CC_SRC_LANGUAGE=`echo "$CC_SRC_LANGUAGE" | tr [:upper:] [:lower:]`
 
-FABRIC_CFG_PATH=$PWD/../config/
+FABRIC_CFG_PATH=$PWD/config/
 
 if [ "$CC_SRC_LANGUAGE" = "go" -o "$CC_SRC_LANGUAGE" = "golang" ] ; then
 	CC_RUNTIME_LANGUAGE=golang
-	CC_SRC_PATH="../chaincode/fabcar/go/"
+	CC_SRC_PATH="./chaincode/fabcar/go/"
 
 	echo Vendoring Go dependencies ...
 	pushd ../chaincode/fabcar/go
