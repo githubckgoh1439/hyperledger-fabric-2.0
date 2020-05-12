@@ -73,7 +73,7 @@ Chain-code package
 
 `peer lifecycle chaincode queryinstalled`
 
-`export CC_PACKAGE_ID=nft_1:9f66bbe0a5b2f2ddb76e37507243dbf320be29e34471355c646ed785bfd7ff00`
+`export CC_PACKAGE_ID=nft_1:388e32a7bc67be280de6917f9eacae5f55425c14af5a47b4af3a3cd8722facf0`
 
 ### Aprove the chain code
 
@@ -131,8 +131,8 @@ Chain-code package
 
 #### Now we can query the chain-code
 
-`peer chaincode query -C mychannel -n fabcar -c '{"Args":["queryAllCars"]}'`
+`peer chaincode query -C mychannel -n nft -c '{"Args":["queryAllnft"]}'`
 
-`peer chaincode query -C mychannel -n nft -c '{"Args":["getTokenInfo","22_symbol"]}'`
+`peer chaincode query -C mychannel -n nft -c '{"Args":["getTokenInfo","symbol0"]}'`
 
-`peer chaincode query -C mychannel -n nft -c '{"function":"getTokenInfo","Args":["22_symbol"]}' >&log.txt`
+`peer chaincode query -C mychannel -n nft -c '{"function":"getTokenInfo","Args":["symbol0"]}' >&log.txt`

@@ -6,8 +6,6 @@ import (
 	"strconv"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
-	// "github.com/hyperledger/fabric/core/chaincode/shim"
-	// sc "github.com/hyperledger/fabric/protos/peer"
 )
 
 // Define the Smart Contract structure
@@ -48,25 +46,37 @@ type EventListenerMessage struct {
 	Description string
 }
 
+type QueryResult struct {
+	Key    string `json:"Key"`
+	Record *NFT
+}
+
 // Init
 func (s *NFTChainCode) InitLedger(ctx contractapi.TransactionContextInterface) error {
 	fmt.Printf("\n============= START : Chaincode is instantiated by the blockchain network :===========")
 
 	nft := []NFT{
 
-		NFT{Name: "22_name", Symbol: "22_symbol", Creator: "blue", Metadata: "metadata_123456789", TotalSupply: 20000, Minted: 3},
+		NFT{Name: "token0", Symbol: "symbol0", Creator: "blue", Metadata: "metadata_123456789", TotalSupply: 20000, Minted: 3},
+		NFT{Name: "token1", Symbol: "symbol1", Creator: "red", Metadata: "metadata_123456789", TotalSupply: 30000, Minted: 3},
+		NFT{Name: "token2", Symbol: "symbol2", Creator: "green", Metadata: "metadata_123456789", TotalSupply: 40000, Minted: 3},
+		NFT{Name: "token3", Symbol: "symbol3", Creator: "yellow", Metadata: "metadata_123456789", TotalSupply: 50000, Minted: 3},
+		NFT{Name: "token4", Symbol: "symbol4", Creator: "purple", Metadata: "metadata_123456789", TotalSupply: 60000, Minted: 3},
+		NFT{Name: "token5", Symbol: "symbol5", Creator: "brown", Metadata: "metadata_123456789", TotalSupply: 70000, Minted: 3},
 	}
 
-	for i, nf := range nft {
+	for _, nf := range nft {
 		nftAsBytes, _ := json.Marshal(nf)
-		err := ctx.GetStub().PutState("Nft"+strconv.Itoa(i), nftAsBytes)
+		fmt.Printf("\n============= START : Nft symbol :===========", nf.Symbol)
+		err := ctx.GetStub().PutState(nf.Symbol, nftAsBytes)
 
 		if err != nil {
 			return fmt.Errorf("Failed to put to world state. %s", err.Error())
 		}
-	}
 
+	}
 	return nil
+
 }
 
 // createToken
@@ -707,6 +717,37 @@ func getNonFungibleItemKey(symbol string, itemID []byte) []byte {
 	key = append(key, itemID...)
 
 	return key
+}
+
+// QueryAlltoken returns all symbols found in world state
+func (s *NFTChainCode) QueryAllnft(ctx contractapi.TransactionContextInterface) ([]QueryResult, error) {
+	startKey := "symbol0"
+	endKey := "symbol5"
+
+	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
+
+	if err != nil {
+		return nil, err
+	}
+	defer resultsIterator.Close()
+
+	results := []QueryResult{}
+
+	for resultsIterator.HasNext() {
+		queryResponse, err := resultsIterator.Next()
+
+		if err != nil {
+			return nil, err
+		}
+
+		nft := new(NFT)
+		_ = json.Unmarshal(queryResponse.Value, nft)
+
+		queryResult := QueryResult{Key: queryResponse.Key, Record: nft}
+		results = append(results, queryResult)
+	}
+
+	return results, nil
 }
 
 // MINT

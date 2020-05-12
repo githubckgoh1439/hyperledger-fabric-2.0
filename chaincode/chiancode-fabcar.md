@@ -144,6 +144,11 @@ Chain-code package
 
 `peer chaincode query -C mychannel -n fabcar -c '{"Args":["queryAllCars"]}'`
 
-`peer chaincode query -C mychannel -n nft -c '{"Args":["getTokenInfo","22_symbol"]}'`
+`peer chaincode query -C mychannel -n fabcar -c '{"Args":["queryCar","CAR0"]}'`
+
+
+`peer chaincode query -C mychannel -n nft -c '{"Args":["getTokenInfo","Nft"]}'`
 
 peer chaincode query -C mychannel -n nft -c '{"function":"getTokenInfo","Args":["22_symbol"]}' >&log.txt
+
+`peer chaincode query -C mychannel -n fabcar -c '{"Args":["queryAllnft"]}'`

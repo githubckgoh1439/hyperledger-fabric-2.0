@@ -7,6 +7,17 @@ This project contain 5 orderer with 3 ca and 4 peers network.Still work in proge
 
 ### Create the crypto keys running Certificate Authority
 
+
+### Export the peer binary inside the bin folder
+
+`export PATH=${PWD}/./bin:${PWD}:$PATH`
+
+
+### Export the config for peer form core.yaml
+
+`export FABRIC_CFG_PATH=$PWD/config/`
+
+
 * Use below command which bring up the ca_org1, ca_org2, ca_orderer & which will create the peer,ca-admin,orderer keypairs
 
     `bash ./scripts/ca.sh`

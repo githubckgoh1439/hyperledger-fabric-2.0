@@ -214,7 +214,7 @@ chaincodeInvokeInit() {
 
   peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n nft $PEER_CONN_PARMS --isInit -c '{"function":"InitLedger","Args":[]}' >&log.txt
 
-#   peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n nft $PEER_CONN_PARMS --isInit -c '{"function":"invoke","Args":["create","tt","item1","ssy","10000"]}' >&log.txt
+#  
   res=$?
   set +x
   cat log.txt
@@ -235,7 +235,7 @@ chaincodeQuery() {
     sleep $DELAY
     echo "Attempting to Query peer0.org${ORG} ...$(($(date +%s) - starttime)) secs"
     set -x
-    peer chaincode query -C $CHANNEL_NAME -n nft -c '{"function":"getItemInfo","Args":["item1"]}' >&log.txt
+    peer chaincode query -C $CHANNEL_NAME -n nft -c '{"Args":["queryAllnft"]}' >&log.txt
     res=$?
     set +x
 		let rc=$res
@@ -285,8 +285,8 @@ checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true"
 commitChaincodeDefinition 1 2
 
 # ## query on both orgs to see that the definition committed successfully
-# queryCommitted 1
-# queryCommitted 2
+queryCommitted 1
+queryCommitted 2
 
 ## Invoke the chaincode
 chaincodeInvokeInit 1 2
