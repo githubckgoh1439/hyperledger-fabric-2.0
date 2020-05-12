@@ -77,7 +77,7 @@ Chain-code package
 
 `peer lifecycle chaincode queryinstalled`
 
-`export CC_PACKAGE_ID=nft_1:6d425b76ecd2218f3107dc1fe5d0c7d7663c9569a5de7fbf05a86893480b4ec9`
+`export CC_PACKAGE_ID=nft_1:9f66bbe0a5b2f2ddb76e37507243dbf320be29e34471355c646ed785bfd7ff00`
 
 ### Aprove the chain code
 
@@ -138,8 +138,12 @@ Chain-code package
 `peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls true --cafile ${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C mychannel -n fabcar --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt --peerAddresses localhost:9051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt --isInit -c '{"function":"InitLedger","Args":[]}`'
 
 * Nft
-`peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls true --cafile ${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C mychannel -n nft --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt --peerAddresses localhost:9051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt --isInit -c '{"function":"InitLedger","Args":[]}`'
+`peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls true --cafile ${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem -C mychannel -n nft --peerAddresses localhost:7051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt --peerAddresses localhost:9051 --tlsRootCertFiles ${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt --isInit -c '{"function":"InitLedger","Args":[]}'`
 
 #### Now we can query the chain-code
 
 `peer chaincode query -C mychannel -n fabcar -c '{"Args":["queryAllCars"]}'`
+
+`peer chaincode query -C mychannel -n nft -c '{"Args":["getTokenInfo","22_symbol"]}'`
+
+peer chaincode query -C mychannel -n nft -c '{"function":"getTokenInfo","Args":["22_symbol"]}' >&log.txt

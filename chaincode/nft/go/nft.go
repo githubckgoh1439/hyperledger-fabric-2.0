@@ -6,8 +6,8 @@ import (
 	"strconv"
 
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
-	"github.com/hyperledger/fabric/core/chaincode/shim"
-	sc "github.com/hyperledger/fabric/protos/peer"
+	// "github.com/hyperledger/fabric/core/chaincode/shim"
+	// sc "github.com/hyperledger/fabric/protos/peer"
 )
 
 // Define the Smart Contract structure
@@ -51,44 +51,33 @@ type EventListenerMessage struct {
 // Init
 func (s *NFTChainCode) InitLedger(ctx contractapi.TransactionContextInterface) error {
 	fmt.Printf("\n============= START : Chaincode is instantiated by the blockchain network :===========")
+
+	nft := []NFT{
+
+		NFT{Name: "22_name", Symbol: "22_symbol", Creator: "blue", Metadata: "metadata_123456789", TotalSupply: 20000, Minted: 3},
+	}
+
+	for i, nf := range nft {
+		nftAsBytes, _ := json.Marshal(nf)
+		err := ctx.GetStub().PutState("Nft"+strconv.Itoa(i), nftAsBytes)
+
+		if err != nil {
+			return fmt.Errorf("Failed to put to world state. %s", err.Error())
+		}
+	}
+
 	return nil
 }
 
-// Invoke
-func (s *NFTChainCode) invoke(ctx contractapi.TransactionContextInterface) sc.Response {
-
-	function, args := ctx.GetStub().GetFunctionAndParameters()
-
-	if function == "transfer" {
-		return s.transferNonFungibleTokenItem(ctx, args)
-	} else if function == "mint" {
-		return s.mintNonFungibleTokenItem(ctx, args)
-	} else if function == "burn" {
-		return s.burnNonFungibleTokenItem(ctx, args)
-	} else if function == "create" {
-		return s.createNonFungibleToken(ctx, args)
-	} else if function == "endorse" {
-		return s.endorseNonFungibleTokenItem(ctx, args)
-	} else if function == "getItem" {
-		return s.getItemInfo(ctx, args)
-	} else if function == "getToken" {
-		return s.getTokenInfo(ctx, args)
-	}
-
-	val := "Invalid Smart Contract function : " + function
-	return shim.Error(val)
-
-}
-
 // createToken
-func (s *NFTChainCode) createNonFungibleToken(ctx contractapi.TransactionContextInterface, args []string) sc.Response {
+func (s *NFTChainCode) CreateNonFungibleToken(ctx contractapi.TransactionContextInterface, args []string) ([]byte, error) {
 
 	if len(args) != 4 {
 		code := "99"
 		msg := "Incorrect number of arguments. Expecting 4"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 	}
 
 	tokenName := args[0]
@@ -101,7 +90,7 @@ func (s *NFTChainCode) createNonFungibleToken(ctx contractapi.TransactionContext
 		msg := "Invalid Total Supply: " + err.Error()
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 	}
 
 	//1. Validation : Not authorised to apply for token creation.
@@ -112,7 +101,7 @@ func (s *NFTChainCode) createNonFungibleToken(ctx contractapi.TransactionContext
 		msg := "Error while getting the signer: " + err.Error()
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 	}
 
 	creator, err := ctx.GetClientIdentity().GetID()
@@ -127,7 +116,7 @@ func (s *NFTChainCode) createNonFungibleToken(ctx contractapi.TransactionContext
 		msg := "Symbol already existed"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 	}
 
 	//3. Construct the Token Object, then save into blockchain
@@ -148,7 +137,7 @@ func (s *NFTChainCode) createNonFungibleToken(ctx contractapi.TransactionContext
 		msg := "Failed to create token tx"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 	}
 	fmt.Printf("\nFinal symbol : %v, Token Data : %v", tokenKey, string(tokenData))
 
@@ -166,7 +155,7 @@ func (s *NFTChainCode) createNonFungibleToken(ctx contractapi.TransactionContext
 	msg := "Create Token Successfully"
 	payloads := []string{txID, creator}
 	rsData := getResponseData(code, msg, payloads)
-	return shim.Success(rsData)
+	return rsData, nil
 }
 
 // -- Chaincode Event Listener
@@ -184,14 +173,14 @@ func invokeEventlistener(ctx contractapi.TransactionContextInterface, event *Eve
 }
 
 // mint
-func (s *NFTChainCode) mintNonFungibleTokenItem(ctx contractapi.TransactionContextInterface, args []string) sc.Response {
+func (s *NFTChainCode) MintNonFungibleTokenItem(ctx contractapi.TransactionContextInterface, args []string) ([]byte, error) {
 	err := ctx.GetClientIdentity().AssertAttributeValue("roletype", "admin")
 	if err != nil {
 		code := "99"
 		msg := "Incorrect roletype attribute : " + err.Error()
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 	}
 
 	if len(args) != 5 {
@@ -200,7 +189,7 @@ func (s *NFTChainCode) mintNonFungibleTokenItem(ctx contractapi.TransactionConte
 		msg := "Incorrect number of arguments. Expecting 5"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 	}
 
 	tokenSymbol := args[0]
@@ -216,7 +205,7 @@ func (s *NFTChainCode) mintNonFungibleTokenItem(ctx contractapi.TransactionConte
 		msg := "Symbol not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 	}
 
 	//3.1 Validation : Is this itemID existed ?
@@ -226,7 +215,7 @@ func (s *NFTChainCode) mintNonFungibleTokenItem(ctx contractapi.TransactionConte
 		msg := "ItemID already exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 	}
 
 	//3.2 Validation : '*NFT.Minted' <= '*NFT.TotalSupply', which can not exceed the total-supply
@@ -241,7 +230,7 @@ func (s *NFTChainCode) mintNonFungibleTokenItem(ctx contractapi.TransactionConte
 		msg := "Exceed the limit of Total Supply. Not allowed to proceed"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 
 	}
 
@@ -279,7 +268,7 @@ func (s *NFTChainCode) mintNonFungibleTokenItem(ctx contractapi.TransactionConte
 	payloads := []string{txID}
 	rsData := getResponseData(code, msg, payloads)
 
-	return shim.Success(rsData)
+	return rsData, nil
 }
 
 // sub :  Update the '*NFT.Minted' += 1
@@ -298,14 +287,14 @@ func changeTokenMintedAmount(ctx contractapi.TransactionContextInterface, symbol
 }
 
 // burn
-func (s *NFTChainCode) burnNonFungibleTokenItem(ctx contractapi.TransactionContextInterface, args []string) sc.Response {
+func (s *NFTChainCode) BurnNonFungibleTokenItem(ctx contractapi.TransactionContextInterface, args []string) ([]byte, error) {
 
 	if len(args) != 3 {
 		code := "99"
 		msg := "Incorrect number of arguments. Expecting 3"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 
 	}
 
@@ -319,7 +308,7 @@ func (s *NFTChainCode) burnNonFungibleTokenItem(ctx contractapi.TransactionConte
 		msg := "Symbol not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 
 	}
 
@@ -329,7 +318,7 @@ func (s *NFTChainCode) burnNonFungibleTokenItem(ctx contractapi.TransactionConte
 		msg := "ItemID not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 	}
 
 	//4.1 : Get the info of : ownerKey, itemKey
@@ -345,7 +334,7 @@ func (s *NFTChainCode) burnNonFungibleTokenItem(ctx contractapi.TransactionConte
 		msg := "ItemId owner not match. Not allowed to proceed"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 
 	}
 
@@ -373,18 +362,18 @@ func (s *NFTChainCode) burnNonFungibleTokenItem(ctx contractapi.TransactionConte
 	payloads := []string{txID}
 	rsData := getResponseData(code, msg, payloads)
 
-	return shim.Success(rsData)
+	return rsData, nil
 }
 
 // transfer
-func (s *NFTChainCode) transferNonFungibleTokenItem(ctx contractapi.TransactionContextInterface, args []string) sc.Response {
+func (s *NFTChainCode) TransferNonFungibleTokenItem(ctx contractapi.TransactionContextInterface, args []string) ([]byte, error) {
 
 	if len(args) != 4 {
 		code := "99"
 		msg := "Incorrect number of arguments. Expecting 4"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 
 	}
 
@@ -399,7 +388,7 @@ func (s *NFTChainCode) transferNonFungibleTokenItem(ctx contractapi.TransactionC
 		msg := "Symbol not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 
 	}
 
@@ -410,7 +399,7 @@ func (s *NFTChainCode) transferNonFungibleTokenItem(ctx contractapi.TransactionC
 		msg := "ItemID not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 	}
 
 	//4.1 : Get the info of : ownerKey, itemKey
@@ -429,7 +418,7 @@ func (s *NFTChainCode) transferNonFungibleTokenItem(ctx contractapi.TransactionC
 		msg := "ItemId owner not match. Not allowed to proceed"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 	}
 
 	//4.2 : Delete the info base on : ownerKey, itemKey
@@ -468,11 +457,11 @@ func (s *NFTChainCode) transferNonFungibleTokenItem(ctx contractapi.TransactionC
 	payloads := []string{txID}
 	rsData := getResponseData(code, msg, payloads)
 
-	return shim.Success(rsData)
+	return rsData, nil
 }
 
 // endorse
-func (s *NFTChainCode) endorseNonFungibleTokenItem(ctx contractapi.TransactionContextInterface, args []string) sc.Response {
+func (s *NFTChainCode) EndorseNonFungibleTokenItem(ctx contractapi.TransactionContextInterface, args []string) ([]byte, error) {
 	// Args:
 	// 1- Symbol
 	// 2- Item-id
@@ -484,7 +473,7 @@ func (s *NFTChainCode) endorseNonFungibleTokenItem(ctx contractapi.TransactionCo
 		msg := "Incorrect number of arguments. Expecting 2"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 
 	}
 
@@ -497,7 +486,7 @@ func (s *NFTChainCode) endorseNonFungibleTokenItem(ctx contractapi.TransactionCo
 		msg := "Symbol not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 
 	}
 
@@ -507,7 +496,7 @@ func (s *NFTChainCode) endorseNonFungibleTokenItem(ctx contractapi.TransactionCo
 		msg := "ItemID not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 
 	}
 
@@ -518,7 +507,7 @@ func (s *NFTChainCode) endorseNonFungibleTokenItem(ctx contractapi.TransactionCo
 		msg := err.Error()
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 	}
 	// get the endorser
 	endorsementSigner, err := ctx.GetClientIdentity().GetID()
@@ -534,7 +523,7 @@ func (s *NFTChainCode) endorseNonFungibleTokenItem(ctx contractapi.TransactionCo
 		msg := "Item not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 	}
 
 	// update endorser
@@ -557,12 +546,12 @@ func (s *NFTChainCode) endorseNonFungibleTokenItem(ctx contractapi.TransactionCo
 	msg := "Endorsed Item Successfully"
 	payloads := []string{txID}
 	rsData := getResponseData(code, msg, payloads)
-	return shim.Success(rsData)
+	return rsData, nil
 
 }
 
 // getItem
-func (s *NFTChainCode) getItemInfo(ctx contractapi.TransactionContextInterface, args []string) sc.Response {
+func (s *NFTChainCode) GetItemInfo(ctx contractapi.TransactionContextInterface, args []string) ([]byte, error) {
 
 	if len(args) != 2 {
 
@@ -570,7 +559,7 @@ func (s *NFTChainCode) getItemInfo(ctx contractapi.TransactionContextInterface, 
 		msg := "Incorrect number of arguments. Expecting 2"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 	}
 
 	tokenSymbol := args[0]
@@ -583,7 +572,7 @@ func (s *NFTChainCode) getItemInfo(ctx contractapi.TransactionContextInterface, 
 		msg := "Symbol not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 
 	}
 
@@ -594,8 +583,7 @@ func (s *NFTChainCode) getItemInfo(ctx contractapi.TransactionContextInterface, 
 		msg := "ItemID not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
-
+		return rsData, nil
 	}
 
 	nonFungibleTokenItem := getNonFungibleItem(ctx, tokenSymbol, itemID)
@@ -604,7 +592,7 @@ func (s *NFTChainCode) getItemInfo(ctx contractapi.TransactionContextInterface, 
 		msg := "Item not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 	}
 
 	itemData, _ := json.Marshal(nonFungibleTokenItem)
@@ -617,12 +605,12 @@ func (s *NFTChainCode) getItemInfo(ctx contractapi.TransactionContextInterface, 
 	}
 	invokeEventlistener(ctx, eventPayload)
 
-	return shim.Success(itemData)
+	return itemData, nil
 
 }
 
 // getToken
-func (s *NFTChainCode) getTokenInfo(ctx contractapi.TransactionContextInterface, args []string) sc.Response {
+func (s *NFTChainCode) GetTokenInfo(ctx contractapi.TransactionContextInterface, args []string) ([]byte, error) {
 
 	if len(args) != 1 {
 
@@ -630,7 +618,7 @@ func (s *NFTChainCode) getTokenInfo(ctx contractapi.TransactionContextInterface,
 		msg := "Incorrect number of arguments. Expecting 1"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 
 	}
 
@@ -643,7 +631,7 @@ func (s *NFTChainCode) getTokenInfo(ctx contractapi.TransactionContextInterface,
 		msg := "Symbol not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 	}
 
 	nonFungibleToken := getNonFungibleToken(ctx, tokenSymbol)
@@ -652,7 +640,7 @@ func (s *NFTChainCode) getTokenInfo(ctx contractapi.TransactionContextInterface,
 		msg := "Token not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return shim.Error(string(rsData))
+		return rsData, nil
 	}
 
 	tokenData, _ := json.Marshal(nonFungibleToken)
@@ -665,7 +653,7 @@ func (s *NFTChainCode) getTokenInfo(ctx contractapi.TransactionContextInterface,
 	}
 	invokeEventlistener(ctx, eventPayload)
 
-	return shim.Success(tokenData)
+	return tokenData, nil
 
 }
 
