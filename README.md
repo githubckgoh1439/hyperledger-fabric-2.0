@@ -4,9 +4,23 @@ This project contain 5 orderer with 3 ca and 4 peers network.Still work in proge
 
 ### Steps to run fabric
 
-* Create the crypto file using the below command
 
-    `bash ./cryptogen.sh`
+### Create the crypto keys running Certificate Authority
+
+
+### Export the peer binary inside the bin folder
+
+`export PATH=${PWD}/./bin:${PWD}:$PATH`
+
+
+### Export the config for peer form core.yaml
+
+`export FABRIC_CFG_PATH=$PWD/config/`
+
+
+* Use below command which bring up the ca_org1, ca_org2, ca_orderer & which will create the peer,ca-admin,orderer keypairs
+
+    `bash ./scripts/ca.sh`
 
 * Create the genesis file using the below command
 
@@ -42,3 +56,9 @@ This project contain 5 orderer with 3 ca and 4 peers network.Still work in proge
  `bash ./scripts/chain-code/deployCC.sh`
 
 Note: Before running the join channel command, you need to run the docker container
+
+
+
+* Another way to create the crypto file using the below command
+
+    `bash ./cryptogen.sh`

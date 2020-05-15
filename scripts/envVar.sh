@@ -24,7 +24,7 @@ setOrdererGlobals() {
 # Set environment variables for the peer org
 setGlobals() {
   local USING_ORG=""
-  if [ -z "$OVERRIDE_ORG" ]; then
+  if [ -z "$OVERRIDE_ORG" ]; thenCORE_PEER_LOCALMSPID
     USING_ORG=$1
   else
     USING_ORG="${OVERRIDE_ORG}"
