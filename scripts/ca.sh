@@ -1,4 +1,11 @@
 
+### Export the config for peer form core.yaml
+export PATH=${PWD}/./bin:${PWD}:$PATH
+
+### Export the config for peer form core.yaml
+export FABRIC_CFG_PATH=$PWD/config/
+
+
 function createOrgs() {
     echo
     echo "##########################################################"
@@ -17,11 +24,11 @@ function createOrgs() {
 
     createOrg1
 
-    echo "##########################################################"
-    echo "############ Create Org2 Identities ######################"
-    echo "##########################################################"
+    # echo "##########################################################"
+    # echo "############ Create Org2 Identities ######################"
+    # echo "##########################################################"
 
-    createOrg2
+    # createOrg2
 
     echo "##########################################################"
     echo "############ Create Org2 Orderer ######################"
