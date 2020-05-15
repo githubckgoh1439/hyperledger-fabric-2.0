@@ -46,94 +46,78 @@ type EventListenerMessage struct {
 	Description string
 }
 
-type QueryResult struct {
-	Key    string `json:"Key"`
-	Record *NFT
-}
+//================================================= start : testing purpose
 
-// Init
 func (s *NFTChainCode) InitLedger(ctx contractapi.TransactionContextInterface) error {
-	fmt.Printf("\n============= START : Chaincode is instantiated by the blockchain network :===========")
+	fmt.Printf("\n============= START : Chaincode NFTs is instantiated by the blockchain network :===========")
 
-	nft := []NFT{
-
-		NFT{Name: "token0", Symbol: "symbol0", Creator: "blue", Metadata: "metadata_123456789", TotalSupply: 20000, Minted: 3},
-		NFT{Name: "token1", Symbol: "symbol1", Creator: "red", Metadata: "metadata_123456789", TotalSupply: 30000, Minted: 3},
-		NFT{Name: "token2", Symbol: "symbol2", Creator: "green", Metadata: "metadata_123456789", TotalSupply: 40000, Minted: 3},
-		NFT{Name: "token3", Symbol: "symbol3", Creator: "yellow", Metadata: "metadata_123456789", TotalSupply: 50000, Minted: 3},
-		NFT{Name: "token4", Symbol: "symbol4", Creator: "purple", Metadata: "metadata_123456789", TotalSupply: 60000, Minted: 3},
-		NFT{Name: "token5", Symbol: "symbol5", Creator: "brown", Metadata: "metadata_123456789", TotalSupply: 70000, Minted: 3},
-	}
-
-	for _, nf := range nft {
-		nftAsBytes, _ := json.Marshal(nf)
-		fmt.Printf("\n============= START : Nft symbol :===========", nf.Symbol)
-		err := ctx.GetStub().PutState(nf.Symbol, nftAsBytes)
-
-		if err != nil {
-			return fmt.Errorf("Failed to put to world state. %s", err.Error())
-		}
-
-	}
 	return nil
 
 }
 
-// createToken
-func (s *NFTChainCode) CreateNonFungibleToken(ctx contractapi.TransactionContextInterface, args []string) ([]byte, error) {
+//================================================= start : methods
 
-	if len(args) != 4 {
+// CreateNonFungibleToken
+func (s *NFTChainCode) Create(ctx contractapi.TransactionContextInterface, name string, symbols string, metadata string, totalSupplys string) (*ResponseMessage, error) {
+
+	// verifies that the invoker is under adminRole
+	err := ctx.GetClientIdentity().AssertAttributeValue("roletype", "admin")
+	if err != nil {
 		code := "99"
-		msg := "Incorrect number of arguments. Expecting 4"
+		msg := "Incorrect roletype attribute : " + err.Error()
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
 	}
 
-	tokenName := args[0]
-	tokenSymbol := args[1]
-	tokenMetadata := args[2]
-	tokenSupply, err := strconv.Atoi(args[3])
+	tokenName := name
+	tokenSymbol := symbols
+	tokenMetadata := metadata
+	tokenSupply, err := strconv.Atoi(totalSupplys)
 	if err != nil {
 
 		code := "99"
 		msg := "Invalid Total Supply: " + err.Error()
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
 	}
 
-	//1. Validation : Not authorised to apply for token creation.
-	_, err = ctx.GetClientIdentity().GetMSPID() // get information about tx creator
+	invoker, err := ctx.GetClientIdentity().GetID() // get information about tx invoker
 	if err != nil {
-
 		code := "99"
-		msg := "Error while getting the signer: " + err.Error()
+		msg := "Error while getting the invoker: " + err.Error()
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
-	}
 
-	creator, err := ctx.GetClientIdentity().GetID()
-	if err != nil {
-		fmt.Printf("\nSigner : %v", (creator))
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
 	}
 
 	//2. Validation : Is this token-symbol existed ?
-
 	if TokenExists(ctx, tokenSymbol) {
 		code := "99"
-		msg := "Symbol already existed"
+		msg := "Symbol already existed."
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
 	}
 
 	//3. Construct the Token Object, then save into blockchain
 	token := &NFT{
 		Name:        tokenName,
 		Symbol:      tokenSymbol,
-		Creator:     creator,
+		Creator:     invoker,
 		Metadata:    tokenMetadata,
 		TotalSupply: tokenSupply,
 		Minted:      0,
@@ -142,90 +126,73 @@ func (s *NFTChainCode) CreateNonFungibleToken(ctx contractapi.TransactionContext
 	tokenData, _ := json.Marshal(token)
 	err = ctx.GetStub().PutState(tokenKey, tokenData)
 	if err != nil {
-
 		code := "99"
 		msg := "Failed to create token tx"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
-	}
-	fmt.Printf("\nFinal symbol : %v, Token Data : %v", tokenKey, string(tokenData))
 
-	txID := ctx.GetStub().GetTxID()
-	eventPayload := &EventListenerMessage{
-		EventName:   "NonFungibleTokenEvent",
-		TxId:        txID,
-		ItemId:      "",
-		SymbolId:    tokenSymbol,
-		Description: "Create Token Successfully",
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
 	}
-	invokeEventlistener(ctx, eventPayload)
+
+	// getTxID
+	txID := ctx.GetStub().GetTxID()
 
 	code := "0"
 	msg := "Create Token Successfully"
-	payloads := []string{txID, creator}
+	payloads := []string{txID, invoker}
 	rsData := getResponseData(code, msg, payloads)
-	return rsData, nil
+	rs := new(ResponseMessage)
+	_ = json.Unmarshal(rsData, rs)
+	return rs, nil
+
 }
 
-// -- Chaincode Event Listener
-func invokeEventlistener(ctx contractapi.TransactionContextInterface, event *EventListenerMessage) {
+// mintNonFungibleTokenItem
+func (s *NFTChainCode) Mint(ctx contractapi.TransactionContextInterface, symbols string, owner string, itemId string, properties string, metadata string) (*ResponseMessage, error) {
 
-	PayloadData, _ := json.Marshal(event)
-	err := ctx.GetStub().SetEvent(event.EventName, PayloadData)
-	if err != nil {
-		msg := "Failed event listener : " + err.Error()
-		fmt.Printf("\n %v", msg)
-		return
-	}
-
-	return
-}
-
-// mint
-func (s *NFTChainCode) MintNonFungibleTokenItem(ctx contractapi.TransactionContextInterface, args []string) ([]byte, error) {
+	// verifies that the invoker is under adminRole
 	err := ctx.GetClientIdentity().AssertAttributeValue("roletype", "admin")
 	if err != nil {
 		code := "99"
 		msg := "Incorrect roletype attribute : " + err.Error()
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
 	}
 
-	if len(args) != 5 {
-
-		code := "99"
-		msg := "Incorrect number of arguments. Expecting 5"
-		payloads := []string{}
-		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
-	}
-
-	tokenSymbol := args[0]
-	itemIDOwner := args[1] // who is the itemID-owner
-	itemID := []byte(args[2])
-	itemProperties := args[3]
-	itemMetadata := args[4]
+	tokenSymbol := symbols
+	itemIDOwner := owner // who is the itemID-owner
+	itemID := []byte(itemId)
+	itemProperties := properties
+	itemMetadata := metadata
 
 	//2. Validation : Is this token-symbol existed ?
 	if TokenExists(ctx, tokenSymbol) == false {
-
 		code := "99"
 		msg := "Symbol not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
 	}
 
 	//3.1 Validation : Is this itemID existed ?
 	if IsItemIDExisted(ctx, tokenSymbol, itemID) == true {
-
 		code := "99"
 		msg := "ItemID already exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
 	}
 
 	//3.2 Validation : '*NFT.Minted' <= '*NFT.TotalSupply', which can not exceed the total-supply
@@ -240,7 +207,10 @@ func (s *NFTChainCode) MintNonFungibleTokenItem(ctx contractapi.TransactionConte
 		msg := "Exceed the limit of Total Supply. Not allowed to proceed"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
 
 	}
 
@@ -262,79 +232,71 @@ func (s *NFTChainCode) MintNonFungibleTokenItem(ctx contractapi.TransactionConte
 	mintedAmt := 1
 	changeTokenMintedAmount(ctx, tokenSymbol, mintedAmt)
 
-	// getTxID
 	txID := ctx.GetStub().GetTxID()
-	eventPayload := &EventListenerMessage{
-		EventName:   "NonFungibleTokenEvent",
-		TxId:        txID,
-		ItemId:      args[2],
-		SymbolId:    "",
-		Description: "Mint Item Successfully",
-	}
-	invokeEventlistener(ctx, eventPayload)
 
 	code := "0"
 	msg := "Mint Item Successfully"
 	payloads := []string{txID}
 	rsData := getResponseData(code, msg, payloads)
+	rs := new(ResponseMessage)
+	_ = json.Unmarshal(rsData, rs)
+	return rs, nil
 
-	return rsData, nil
 }
 
 // sub :  Update the '*NFT.Minted' += 1
 func changeTokenMintedAmount(ctx contractapi.TransactionContextInterface, symbol string, minted int) {
 
-	initTokenValue, _ := ctx.GetStub().GetState(symbol) // 先讀取
+	initTokenValue, _ := ctx.GetStub().GetState(symbol) // get
 	nonFungibleToken := NFT{}
 	json.Unmarshal(initTokenValue, &nonFungibleToken)
 
 	// add new record - base on new-owner
-	nonFungibleToken.Minted = nonFungibleToken.Minted + minted // 再修改, Update the 'minted' amount
+	nonFungibleToken.Minted = nonFungibleToken.Minted + minted // Update the 'minted' amount
 	latestTokenValue, _ := json.Marshal(nonFungibleToken)
-	ctx.GetStub().PutState(symbol, latestTokenValue) // 最後寫入
+	ctx.GetStub().PutState(symbol, latestTokenValue) // commit
 
 	return
 }
 
-// burn
-func (s *NFTChainCode) BurnNonFungibleTokenItem(ctx contractapi.TransactionContextInterface, args []string) ([]byte, error) {
+// burnNonFungibleTokenItem
+func (s *NFTChainCode) Burn(ctx contractapi.TransactionContextInterface, symbols string, owner string, itemId string) (*ResponseMessage, error) {
 
-	if len(args) != 3 {
-		code := "99"
-		msg := "Incorrect number of arguments. Expecting 3"
-		payloads := []string{}
-		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
-
-	}
-
-	tokenSymbol := args[0]
-	itemIDOwner := args[1] // who is the itemID-owner
-	itemID := []byte(args[2])
+	tokenSymbol := symbols
+	itemIDOwner := owner // who is the itemID-owner
+	itemID := []byte(itemId)
 
 	//1. Validation : Is this token-symbol existed ?
 	if TokenExists(ctx, tokenSymbol) == false {
+
 		code := "99"
 		msg := "Symbol not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
 
 	}
 
 	//2. Validation : Is this itemID existed ?
 	if IsItemIDExisted(ctx, tokenSymbol, itemID) == false {
+
 		code := "99"
 		msg := "ItemID not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
+
 	}
 
 	//4.1 : Get the info of : ownerKey, itemKey
 	itemKey := getNonFungibleItemKey(tokenSymbol, itemID)
 	itemOwnerKey := getNonFungibleOwnerKey(tokenSymbol, itemID)
-
 	itemOwnerData, _ := ctx.GetStub().GetState(string(itemOwnerKey))
 
 	// Validation : Is the item-owner matched with params-itemIDOwner? if not, not allowed to proceed.
@@ -344,7 +306,10 @@ func (s *NFTChainCode) BurnNonFungibleTokenItem(ctx contractapi.TransactionConte
 		msg := "ItemId owner not match. Not allowed to proceed"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
 
 	}
 
@@ -356,41 +321,25 @@ func (s *NFTChainCode) BurnNonFungibleTokenItem(ctx contractapi.TransactionConte
 	mintedAmt := -1 // remove item
 	changeTokenMintedAmount(ctx, tokenSymbol, mintedAmt)
 
-	// getTxID
 	txID := ctx.GetStub().GetTxID()
-	eventPayload := &EventListenerMessage{
-		EventName:   "NonFungibleTokenEvent",
-		TxId:        txID,
-		ItemId:      args[2],
-		SymbolId:    "",
-		Description: "Burn Item Successfully",
-	}
-	invokeEventlistener(ctx, eventPayload)
 
 	code := "0"
 	msg := "Burn Item Successfully"
 	payloads := []string{txID}
 	rsData := getResponseData(code, msg, payloads)
+	rs := new(ResponseMessage)
+	_ = json.Unmarshal(rsData, rs)
+	return rs, nil
 
-	return rsData, nil
 }
 
-// transfer
-func (s *NFTChainCode) TransferNonFungibleTokenItem(ctx contractapi.TransactionContextInterface, args []string) ([]byte, error) {
+// transferNonFungibleTokenItem
+func (s *NFTChainCode) Transfer(ctx contractapi.TransactionContextInterface, symbols string, ownerFrom string, ownerTo string, itemId string) (*ResponseMessage, error) {
 
-	if len(args) != 4 {
-		code := "99"
-		msg := "Incorrect number of arguments. Expecting 4"
-		payloads := []string{}
-		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
-
-	}
-
-	tokenSymbol := args[0]
-	itemIDOwnerFrom := args[1] // who is the itemID-owner (From)
-	itemIDOwnerTo := args[2]   // who is the itemID-owner (To)
-	itemID := []byte(args[3])
+	tokenSymbol := symbols
+	itemIDOwnerFrom := ownerFrom // who is the itemID-owner (From)
+	itemIDOwnerTo := ownerTo     // who is the itemID-owner (To)
+	itemID := []byte(itemId)
 
 	//1. Validation : Is this token-symbol existed ?
 	if TokenExists(ctx, tokenSymbol) == false {
@@ -398,7 +347,10 @@ func (s *NFTChainCode) TransferNonFungibleTokenItem(ctx contractapi.TransactionC
 		msg := "Symbol not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
 
 	}
 
@@ -409,7 +361,11 @@ func (s *NFTChainCode) TransferNonFungibleTokenItem(ctx contractapi.TransactionC
 		msg := "ItemID not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
+
 	}
 
 	//4.1 : Get the info of : ownerKey, itemKey
@@ -428,7 +384,11 @@ func (s *NFTChainCode) TransferNonFungibleTokenItem(ctx contractapi.TransactionC
 		msg := "ItemId owner not match. Not allowed to proceed"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
+
 	}
 
 	//4.2 : Delete the info base on : ownerKey, itemKey
@@ -451,44 +411,23 @@ func (s *NFTChainCode) TransferNonFungibleTokenItem(ctx contractapi.TransactionC
 	itemOwnerKey = getNonFungibleOwnerKey(tokenSymbol, itemID)
 	ctx.GetStub().PutState(string(itemOwnerKey), []byte(itemIDOwnerTo))
 
-	// getTxID
 	txID := ctx.GetStub().GetTxID()
-	eventPayload := &EventListenerMessage{
-		EventName:   "NonFungibleTokenEvent",
-		TxId:        txID,
-		ItemId:      args[2],
-		SymbolId:    "",
-		Description: "Transfer Item Successfully",
-	}
-	invokeEventlistener(ctx, eventPayload)
 
 	code := "0"
 	msg := "Transfer Item Successfully"
 	payloads := []string{txID}
 	rsData := getResponseData(code, msg, payloads)
+	rs := new(ResponseMessage)
+	_ = json.Unmarshal(rsData, rs)
+	return rs, nil
 
-	return rsData, nil
 }
 
-// endorse
-func (s *NFTChainCode) EndorseNonFungibleTokenItem(ctx contractapi.TransactionContextInterface, args []string) ([]byte, error) {
-	// Args:
-	// 1- Symbol
-	// 2- Item-id
-	// Endorsement is sender wallet address. Ignore duplicated.
+// endorseNonFungibleTokenItem
+func (s *NFTChainCode) Endorse(ctx contractapi.TransactionContextInterface, symbols string, itemId string) (*ResponseMessage, error) {
 
-	if len(args) != 2 {
-
-		code := "99"
-		msg := "Incorrect number of arguments. Expecting 2"
-		payloads := []string{}
-		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
-
-	}
-
-	tokenSymbol := args[0]
-	itemID := []byte(args[1])
+	tokenSymbol := symbols
+	itemID := []byte(itemId)
 
 	//1. Validation : Is this token-symbol existed ?
 	if TokenExists(ctx, tokenSymbol) == false {
@@ -496,7 +435,10 @@ func (s *NFTChainCode) EndorseNonFungibleTokenItem(ctx contractapi.TransactionCo
 		msg := "Symbol not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
 
 	}
 
@@ -506,74 +448,63 @@ func (s *NFTChainCode) EndorseNonFungibleTokenItem(ctx contractapi.TransactionCo
 		msg := "ItemID not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
 
 	}
 
 	//3. Get the singer of the endorsement
-	_, err := ctx.GetClientIdentity().GetMSPID() // get information about tx creator
+	endorser, err := ctx.GetClientIdentity().GetID() // get information about tx invoker
 	if err != nil {
 		code := "99"
-		msg := err.Error()
+		msg := "Error while getting the endorser: " + err.Error()
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
-	}
-	// get the endorser
-	endorsementSigner, err := ctx.GetClientIdentity().GetID()
-	if err != nil {
-		fmt.Printf("\nEndorser : %v", (endorsementSigner))
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
+
 	}
 
 	//4.1 : Get the info of : itemKey
 	itemKey := getNonFungibleItemKey(tokenSymbol, itemID)
-	nonFungibleTokenItem := getNonFungibleItem(ctx, tokenSymbol, itemID) // 先讀取
+	nonFungibleTokenItem := getNonFungibleItem(ctx, tokenSymbol, itemID) // get
 	if nonFungibleTokenItem == nil {
 		code := "99"
 		msg := "Item not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
+
 	}
 
 	// update endorser
-	nonFungibleTokenItem.Endorsements = []string{endorsementSigner} // 再修改,
+	nonFungibleTokenItem.Endorsements = []string{endorser} // edit
 	latestTokenItemData, _ := json.Marshal(nonFungibleTokenItem)
-	ctx.GetStub().PutState(string(itemKey), latestTokenItemData) // 最後寫入
+	ctx.GetStub().PutState(string(itemKey), latestTokenItemData) // commit
 
-	// getTxID
 	txID := ctx.GetStub().GetTxID()
-	eventPayload := &EventListenerMessage{
-		EventName:   "NonFungibleTokenEvent",
-		TxId:        txID,
-		ItemId:      args[1],
-		SymbolId:    "",
-		Description: "Endorsed Item Successfully",
-	}
-	invokeEventlistener(ctx, eventPayload)
 
 	code := "0"
 	msg := "Endorsed Item Successfully"
 	payloads := []string{txID}
 	rsData := getResponseData(code, msg, payloads)
-	return rsData, nil
+	rs := new(ResponseMessage)
+	_ = json.Unmarshal(rsData, rs)
+	return rs, nil
 
 }
 
-// getItem
-func (s *NFTChainCode) GetItemInfo(ctx contractapi.TransactionContextInterface, args []string) ([]byte, error) {
+// getTokenInfo
+func (s *NFTChainCode) GetToken(ctx contractapi.TransactionContextInterface, symbols string) (*ResponseMessage, error) {
 
-	if len(args) != 2 {
-
-		code := "99"
-		msg := "Incorrect number of arguments. Expecting 2"
-		payloads := []string{}
-		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
-	}
-
-	tokenSymbol := args[0]
-	itemID := []byte(args[1])
+	tokenSymbol := symbols
 
 	//1. Validation : Is this token-symbol existed ?
 	if TokenExists(ctx, tokenSymbol) == false {
@@ -582,66 +513,10 @@ func (s *NFTChainCode) GetItemInfo(ctx contractapi.TransactionContextInterface, 
 		msg := "Symbol not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
 
-	}
-
-	//2. Validation : Is this itemID existed ?
-	if IsItemIDExisted(ctx, tokenSymbol, itemID) == false {
-
-		code := "99"
-		msg := "ItemID not exist"
-		payloads := []string{}
-		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
-	}
-
-	nonFungibleTokenItem := getNonFungibleItem(ctx, tokenSymbol, itemID)
-	if nonFungibleTokenItem == nil {
-		code := "99"
-		msg := "Item not exist"
-		payloads := []string{}
-		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
-	}
-
-	itemData, _ := json.Marshal(nonFungibleTokenItem)
-	eventPayload := &EventListenerMessage{
-		EventName:   "NonFungibleTokenEvent",
-		TxId:        "",
-		ItemId:      "",
-		SymbolId:    "",
-		Description: "Get Item Info Successfully",
-	}
-	invokeEventlistener(ctx, eventPayload)
-
-	return itemData, nil
-
-}
-
-// getToken
-func (s *NFTChainCode) GetTokenInfo(ctx contractapi.TransactionContextInterface, args []string) ([]byte, error) {
-
-	if len(args) != 1 {
-
-		code := "99"
-		msg := "Incorrect number of arguments. Expecting 1"
-		payloads := []string{}
-		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
-
-	}
-
-	tokenSymbol := args[0]
-
-	//1. Validation : Is this token-symbol existed ?
-	if TokenExists(ctx, tokenSymbol) == false {
-
-		code := "99"
-		msg := "Symbol not exist"
-		payloads := []string{}
-		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
 	}
 
 	nonFungibleToken := getNonFungibleToken(ctx, tokenSymbol)
@@ -650,24 +525,83 @@ func (s *NFTChainCode) GetTokenInfo(ctx contractapi.TransactionContextInterface,
 		msg := "Token not exist"
 		payloads := []string{}
 		rsData := getResponseData(code, msg, payloads)
-		return rsData, nil
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
 	}
 
 	tokenData, _ := json.Marshal(nonFungibleToken)
-	eventPayload := &EventListenerMessage{
-		EventName:   "NonFungibleTokenEvent",
-		TxId:        "",
-		ItemId:      "",
-		SymbolId:    "",
-		Description: "Get Token Info Successfully",
-	}
-	invokeEventlistener(ctx, eventPayload)
+	py := string(tokenData)
+	code := "0"
+	msg := ""
+	payloads := []string{py}
+	rsData := getResponseData(code, msg, payloads)
 
-	return tokenData, nil
+	rs := new(ResponseMessage)
+	_ = json.Unmarshal(rsData, rs)
+	return rs, nil
 
 }
 
-/********************* start : sub() ****************************************/
+// getItemInfo
+func (s *NFTChainCode) GetItem(ctx contractapi.TransactionContextInterface, symbols string, itemId string) (*ResponseMessage, error) {
+
+	tokenSymbol := symbols
+	itemID := []byte(itemId)
+
+	//1. Validation : Is this token-symbol existed ?
+	if TokenExists(ctx, tokenSymbol) == false {
+
+		code := "99"
+		msg := "Symbol not exist"
+		payloads := []string{}
+		rsData := getResponseData(code, msg, payloads)
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
+
+	}
+
+	//2. Validation : Is this itemID existed ?
+	if IsItemIDExisted(ctx, tokenSymbol, itemID) == false {
+
+		code := "99"
+		msg := "ItemID not exist"
+		payloads := []string{}
+		rsData := getResponseData(code, msg, payloads)
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
+
+	}
+
+	nonFungibleTokenItem := getNonFungibleItem(ctx, tokenSymbol, itemID)
+	if nonFungibleTokenItem == nil {
+		code := "99"
+		msg := "Item not exist"
+		payloads := []string{}
+		rsData := getResponseData(code, msg, payloads)
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+		return rs, nil
+
+	}
+
+	itemData, _ := json.Marshal(nonFungibleTokenItem)
+	py := string(itemData)
+	code := "0"
+	msg := ""
+	payloads := []string{py}
+	rsData := getResponseData(code, msg, payloads)
+	rs := new(ResponseMessage)
+	_ = json.Unmarshal(rsData, rs)
+	return rs, nil
+
+}
 
 func IsItemIDExisted(ctx contractapi.TransactionContextInterface, symbol string, itemID []byte) bool {
 
@@ -682,7 +616,12 @@ func IsItemIDExisted(ctx contractapi.TransactionContextInterface, symbol string,
 func getNonFungibleToken(ctx contractapi.TransactionContextInterface, symbol string) *NFT {
 	tokenKey := symbol
 
-	tokenValue, _ := getKey(ctx, string(tokenKey))
+	tokenValue, err := ctx.GetStub().GetState(tokenKey)
+
+	if err != nil {
+		return nil
+	}
+
 	if tokenValue == nil {
 		return nil
 	}
@@ -700,6 +639,7 @@ func getNonFungibleItem(ctx contractapi.TransactionContextInterface, symbol stri
 	if itemValue == nil {
 		return nil
 	}
+
 	var item = new(Item)
 	json.Unmarshal(itemValue, item)
 
@@ -719,40 +659,8 @@ func getNonFungibleItemKey(symbol string, itemID []byte) []byte {
 	return key
 }
 
-// QueryAlltoken returns all symbols found in world state
-func (s *NFTChainCode) QueryAllnft(ctx contractapi.TransactionContextInterface) ([]QueryResult, error) {
-	startKey := "symbol0"
-	endKey := "symbol5"
-
-	resultsIterator, err := ctx.GetStub().GetStateByRange(startKey, endKey)
-
-	if err != nil {
-		return nil, err
-	}
-	defer resultsIterator.Close()
-
-	results := []QueryResult{}
-
-	for resultsIterator.HasNext() {
-		queryResponse, err := resultsIterator.Next()
-
-		if err != nil {
-			return nil, err
-		}
-
-		nft := new(NFT)
-		_ = json.Unmarshal(queryResponse.Value, nft)
-
-		queryResult := QueryResult{Key: queryResponse.Key, Record: nft}
-		results = append(results, queryResult)
-	}
-
-	return results, nil
-}
-
-// MINT
 func getNonFungibleOwnerKey(symbol string, itemID []byte) []byte {
-	prefixNonFungibleOwner := []byte("0x02")
+	prefixNonFungibleOwner := []byte("0x02") // prefix
 
 	key := make([]byte, 0, len(prefixNonFungibleOwner)+1+len(symbol)+1+len(itemID))
 	key = append(key, prefixNonFungibleOwner...)
@@ -776,37 +684,32 @@ func getResponseData(code string, msg string, payloads []string) []byte {
 	return rsData
 }
 
-// OK:
 func TokenExists(ctx contractapi.TransactionContextInterface, symbol string) bool {
 
 	tokenValue, _ := getKey(ctx, symbol)
-	if tokenValue != nil {
-		return true
+	if tokenValue == nil {
+		return false
 	}
 
-	return false
+	return true
 }
 
-// OK:
-func getKey(ctx contractapi.TransactionContextInterface, symbol string) ([]byte, error) {
-	return ctx.GetStub().GetState(symbol)
+func getKey(ctx contractapi.TransactionContextInterface, val string) ([]byte, error) {
+	return ctx.GetStub().GetState(val)
 }
-
-/********************* start : main() ****************************************/
 
 // The main function is only relevant in unit test mode. Only included here for completeness.
 func main() {
 
 	// Create a new Chaincode
-
 	chaincode, err := contractapi.NewChaincode(new(NFTChainCode))
 
 	if err != nil {
-		fmt.Printf("Error create fabcar chaincode: %s", err.Error())
+		fmt.Printf("Error create NFTs chaincode: %s", err.Error())
 		return
 	}
 
 	if err := chaincode.Start(); err != nil {
-		fmt.Printf("Error starting fabcar chaincode: %s", err.Error())
+		fmt.Printf("Error starting NFTs chaincode: %s", err.Error())
 	}
 }
