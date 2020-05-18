@@ -6,7 +6,7 @@ VERBOSE="$4"
 : ${DELAY:="3"}
 : ${MAX_RETRY:="5"}
 : ${VERBOSE:="false"}
-export FABRIC_CFG_PATH=${PWD}/configtx
+export FABRIC_CFG_PATH=${PWD}/config/
 
 
 # import utils
@@ -46,7 +46,7 @@ createAncorPeerTx() {
 }
 
 
-FABRIC_CFG_PATH=${PWD}/configtx
+FABRIC_CFG_PATH=${PWD}/config/
 ## Create channeltx
 echo "### Generating channel configuration transaction '${CHANNEL_NAME}.tx' ###"
 createChannelTx

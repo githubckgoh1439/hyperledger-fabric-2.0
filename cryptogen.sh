@@ -1,5 +1,5 @@
 export PATH=${PWD}/../bin:${PWD}:$PATH
-export FABRIC_CFG_PATH=${PWD}/configtx
+export FABRIC_CFG_PATH=${PWD}/config
 export VERBOSE=false
 
 

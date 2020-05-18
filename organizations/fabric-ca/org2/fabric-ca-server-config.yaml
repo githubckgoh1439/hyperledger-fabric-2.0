@@ -80,11 +80,11 @@ tls:
 #############################################################################
 ca:
   # Name of this CA
-  name: Org2CA
-  # Key file (is only used to import a private key into BCCSP)
+  name: ca.org2.avantas.com
+
   keyfile:
   # Certificate file (default: ca-cert.pem)
-  certfile:
+  certfile: 
   # Chain file
   chainfile:
 
@@ -237,9 +237,6 @@ ldap:
 # which are always stored in lower case.
 #############################################################################
 affiliations:
-   org1:
-      - department1
-      - department2
    org2:
       - department1
 
@@ -301,16 +298,16 @@ signing:
 #     CA certificates though it can still issue end entity certificates.
 ###########################################################################
 csr:
-   cn: ca.org2.example.com
+   cn: ca.org2.avantas.com
    names:
       - C: UK
         ST: "Hampshire"
         L: "Hursley"
-        O: org2.example.com
+        O: org2.avantas.com
         OU:
    hosts:
      - localhost
-     - org2.example.com
+     - org2.avantas.com
    ca:
       expiry: 131400h
       pathlength: 1
