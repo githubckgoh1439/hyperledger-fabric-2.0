@@ -8,8 +8,9 @@ VERBOSE="$4"
 : ${VERBOSE:="false"}
 
 export FABRIC_CFG_PATH=$PWD/config/
+
 # import utils
-. scripts/envVar.sh
+. ./scripts/envVar.sh
 
 createChannel() {
 	setGlobals 1
@@ -19,7 +20,7 @@ createChannel() {
 	while [ $rc -ne 0 -a $COUNTER -lt $MAX_RETRY ] ; do
 		sleep $DELAY
 		set -x
-		./bin/peer channel create -o localhost:7050 -c $CHANNEL_NAME --ordererTLSHostnameOverride orderer.example.com -f ./channel-artifacts/${CHANNEL_NAME}.tx --outputBlock ./channel-artifacts/${CHANNEL_NAME}.block --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA >&log.txt
+		./bin/peer channel create -o localhost:7050 -c $CHANNEL_NAME --ordererTLSHostnameOverride orderer.avantas.com -f ./channel-artifacts/${CHANNEL_NAME}.tx --outputBlock ./channel-artifacts/${CHANNEL_NAME}.block --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA >&log.txt
 		res=$?
 		set +x
 		let rc=$res

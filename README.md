@@ -24,7 +24,7 @@ This project contain 5 orderer with 3 ca and 4 peers network.Still work in proge
 
 * Create the genesis file using the below command
 
-    `bash ./configtx.sh`
+    `bash ./create_genesis.sh`
 
 * Run the docker-compose which contains all network
 
