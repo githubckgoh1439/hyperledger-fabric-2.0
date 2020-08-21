@@ -24,7 +24,7 @@ type NFT struct {
 
 // ItemID
 type Item struct {
-	ItemId       []byte
+	ItemId       string
 	Metadata     string
 	Properties   string
 	Endorsements []string
@@ -39,6 +39,7 @@ type ResponseMessage struct {
 
 // responseMessage
 type EventListenerMessage struct {
+	Code        string
 	EventName   string
 	TxId        string
 	ItemId      string
@@ -70,6 +71,8 @@ func (s *NFTChainCode) Create(ctx contractapi.TransactionContextInterface, name 
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("CreateEvent", rsData)
 		return rs, nil
 	}
 
@@ -86,6 +89,8 @@ func (s *NFTChainCode) Create(ctx contractapi.TransactionContextInterface, name 
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("CreateEvent", rsData)
 		return rs, nil
 	}
 
@@ -98,8 +103,21 @@ func (s *NFTChainCode) Create(ctx contractapi.TransactionContextInterface, name 
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("CreateEvent", rsData)
 		return rs, nil
 	}
+
+	//1.
+	fmt.Printf("\nInvoker of Create NFTs: %v", (invoker))
+
+	//2.
+	invokerMSP, err := ctx.GetClientIdentity().GetMSPID()
+	fmt.Printf("\ninvokerMSP of Create NFTs: %v", (invokerMSP))
+
+	//3.
+	invokerX509Certificate, err := ctx.GetClientIdentity().GetX509Certificate()
+	fmt.Printf("\ninvoker-X509Certificate of Create NFTs: %v", string(invokerX509Certificate.Raw))
 
 	//2. Validation : Is this token-symbol existed ?
 	if TokenExists(ctx, tokenSymbol) {
@@ -110,6 +128,8 @@ func (s *NFTChainCode) Create(ctx contractapi.TransactionContextInterface, name 
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("CreateEvent", rsData)
 		return rs, nil
 	}
 
@@ -133,11 +153,23 @@ func (s *NFTChainCode) Create(ctx contractapi.TransactionContextInterface, name 
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("CreateEvent", rsData)
 		return rs, nil
 	}
 
 	// getTxID
 	txID := ctx.GetStub().GetTxID()
+
+	eventPayload := &EventListenerMessage{
+		Code:        "0",
+		EventName:   "CreateEvent",
+		TxId:        txID,
+		ItemId:      "",
+		SymbolId:    tokenSymbol,
+		Description: "Create Token Successfully",
+	}
+	invokeEventlistener(ctx, eventPayload)
 
 	code := "0"
 	msg := "Create Token Successfully"
@@ -145,6 +177,7 @@ func (s *NFTChainCode) Create(ctx contractapi.TransactionContextInterface, name 
 	rsData := getResponseData(code, msg, payloads)
 	rs := new(ResponseMessage)
 	_ = json.Unmarshal(rsData, rs)
+
 	return rs, nil
 
 }
@@ -162,12 +195,14 @@ func (s *NFTChainCode) Mint(ctx contractapi.TransactionContextInterface, symbols
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("MintEvent", rsData)
 		return rs, nil
 	}
 
 	tokenSymbol := symbols
 	itemIDOwner := owner // who is the itemID-owner
-	itemID := []byte(itemId)
+	itemID := itemId
 	itemProperties := properties
 	itemMetadata := metadata
 
@@ -180,6 +215,8 @@ func (s *NFTChainCode) Mint(ctx contractapi.TransactionContextInterface, symbols
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("MintEvent", rsData)
 		return rs, nil
 	}
 
@@ -192,6 +229,8 @@ func (s *NFTChainCode) Mint(ctx contractapi.TransactionContextInterface, symbols
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("MintEvent", rsData)
 		return rs, nil
 	}
 
@@ -210,9 +249,14 @@ func (s *NFTChainCode) Mint(ctx contractapi.TransactionContextInterface, symbols
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("MintEvent", rsData)
 		return rs, nil
 
 	}
+
+	// invokerX509Certificate, err := ctx.GetClientIdentity().GetX509Certificate()
+	// fmt.Printf("\ninvoker-X509Certificate of Mint Item: %v", string(invokerX509Certificate.Raw))
 
 	//4. Create this new-token-item which is unique
 	item := &Item{
@@ -233,6 +277,15 @@ func (s *NFTChainCode) Mint(ctx contractapi.TransactionContextInterface, symbols
 	changeTokenMintedAmount(ctx, tokenSymbol, mintedAmt)
 
 	txID := ctx.GetStub().GetTxID()
+	eventPayload := &EventListenerMessage{
+		Code:        "0",
+		EventName:   "MintEvent",
+		TxId:        txID,
+		ItemId:      itemId,
+		SymbolId:    "",
+		Description: "Mint Item Successfully",
+	}
+	invokeEventlistener(ctx, eventPayload)
 
 	code := "0"
 	msg := "Mint Item Successfully"
@@ -264,7 +317,7 @@ func (s *NFTChainCode) Burn(ctx contractapi.TransactionContextInterface, symbols
 
 	tokenSymbol := symbols
 	itemIDOwner := owner // who is the itemID-owner
-	itemID := []byte(itemId)
+	itemID := (itemId)
 
 	//1. Validation : Is this token-symbol existed ?
 	if TokenExists(ctx, tokenSymbol) == false {
@@ -276,6 +329,8 @@ func (s *NFTChainCode) Burn(ctx contractapi.TransactionContextInterface, symbols
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("BurnEvent", rsData)
 		return rs, nil
 
 	}
@@ -290,6 +345,8 @@ func (s *NFTChainCode) Burn(ctx contractapi.TransactionContextInterface, symbols
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("BurnEvent", rsData)
 		return rs, nil
 
 	}
@@ -309,9 +366,14 @@ func (s *NFTChainCode) Burn(ctx contractapi.TransactionContextInterface, symbols
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("BurnEvent", rsData)
 		return rs, nil
 
 	}
+
+	invokerX509Certificate, _ := ctx.GetClientIdentity().GetX509Certificate()
+	fmt.Printf("\ninvoker-X509Certificate of Burn Item: %v", string(invokerX509Certificate.Raw))
 
 	//4.2 : Delete the info base on : ownerKey, itemKey
 	ctx.GetStub().DelState(string(itemKey))
@@ -322,6 +384,15 @@ func (s *NFTChainCode) Burn(ctx contractapi.TransactionContextInterface, symbols
 	changeTokenMintedAmount(ctx, tokenSymbol, mintedAmt)
 
 	txID := ctx.GetStub().GetTxID()
+	eventPayload := &EventListenerMessage{
+		Code:        "0",
+		EventName:   "BurnEvent",
+		TxId:        txID,
+		ItemId:      itemId,
+		SymbolId:    symbols,
+		Description: "Burn Item Successfully",
+	}
+	invokeEventlistener(ctx, eventPayload)
 
 	code := "0"
 	msg := "Burn Item Successfully"
@@ -339,7 +410,7 @@ func (s *NFTChainCode) Transfer(ctx contractapi.TransactionContextInterface, sym
 	tokenSymbol := symbols
 	itemIDOwnerFrom := ownerFrom // who is the itemID-owner (From)
 	itemIDOwnerTo := ownerTo     // who is the itemID-owner (To)
-	itemID := []byte(itemId)
+	itemID := (itemId)
 
 	//1. Validation : Is this token-symbol existed ?
 	if TokenExists(ctx, tokenSymbol) == false {
@@ -350,6 +421,8 @@ func (s *NFTChainCode) Transfer(ctx contractapi.TransactionContextInterface, sym
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("TransferEvent", rsData)
 		return rs, nil
 
 	}
@@ -364,6 +437,8 @@ func (s *NFTChainCode) Transfer(ctx contractapi.TransactionContextInterface, sym
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("TransferEvent", rsData)
 		return rs, nil
 
 	}
@@ -387,9 +462,14 @@ func (s *NFTChainCode) Transfer(ctx contractapi.TransactionContextInterface, sym
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("TransferEvent", rsData)
 		return rs, nil
 
 	}
+
+	invokerX509Certificate, _ := ctx.GetClientIdentity().GetX509Certificate()
+	fmt.Printf("\ninvoker-X509Certificate of Transfer Item: %v", string(invokerX509Certificate.Raw))
 
 	//4.2 : Delete the info base on : ownerKey, itemKey
 	ctx.GetStub().DelState(string(itemKey))
@@ -412,6 +492,15 @@ func (s *NFTChainCode) Transfer(ctx contractapi.TransactionContextInterface, sym
 	ctx.GetStub().PutState(string(itemOwnerKey), []byte(itemIDOwnerTo))
 
 	txID := ctx.GetStub().GetTxID()
+	eventPayload := &EventListenerMessage{
+		Code:        "0",
+		EventName:   "TransferEvent",
+		TxId:        txID,
+		ItemId:      itemId,
+		SymbolId:    "",
+		Description: "Transfer Item Successfully",
+	}
+	invokeEventlistener(ctx, eventPayload)
 
 	code := "0"
 	msg := "Transfer Item Successfully"
@@ -427,7 +516,7 @@ func (s *NFTChainCode) Transfer(ctx contractapi.TransactionContextInterface, sym
 func (s *NFTChainCode) Endorse(ctx contractapi.TransactionContextInterface, symbols string, itemId string) (*ResponseMessage, error) {
 
 	tokenSymbol := symbols
-	itemID := []byte(itemId)
+	itemID := (itemId)
 
 	//1. Validation : Is this token-symbol existed ?
 	if TokenExists(ctx, tokenSymbol) == false {
@@ -438,6 +527,8 @@ func (s *NFTChainCode) Endorse(ctx contractapi.TransactionContextInterface, symb
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("EndorseEvent", rsData)
 		return rs, nil
 
 	}
@@ -451,6 +542,8 @@ func (s *NFTChainCode) Endorse(ctx contractapi.TransactionContextInterface, symb
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("EndorseEvent", rsData)
 		return rs, nil
 
 	}
@@ -465,9 +558,20 @@ func (s *NFTChainCode) Endorse(ctx contractapi.TransactionContextInterface, symb
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("EndorseEvent", rsData)
 		return rs, nil
 
 	}
+	fmt.Printf("\nInvoker of Endorsement : %v", (endorser))
+
+	//2.
+	endorserMSP, err := ctx.GetClientIdentity().GetMSPID()
+	fmt.Printf("\nInvokerMSP of Endorsement: %v", (endorserMSP))
+
+	//3.
+	endorserX509Certificate, err := ctx.GetClientIdentity().GetX509Certificate()
+	fmt.Printf("\nInvoker-X509Certificate of Endorsement: %v", string(endorserX509Certificate.Raw))
 
 	//4.1 : Get the info of : itemKey
 	itemKey := getNonFungibleItemKey(tokenSymbol, itemID)
@@ -480,6 +584,8 @@ func (s *NFTChainCode) Endorse(ctx contractapi.TransactionContextInterface, symb
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("EndorseEvent", rsData)
 		return rs, nil
 
 	}
@@ -490,10 +596,19 @@ func (s *NFTChainCode) Endorse(ctx contractapi.TransactionContextInterface, symb
 	ctx.GetStub().PutState(string(itemKey), latestTokenItemData) // commit
 
 	txID := ctx.GetStub().GetTxID()
+	eventPayload := &EventListenerMessage{
+		Code:        "0",
+		EventName:   "EndorseEvent",
+		TxId:        txID,
+		ItemId:      itemId,
+		SymbolId:    symbols,
+		Description: "Endorsed Item Successfully",
+	}
+	invokeEventlistener(ctx, eventPayload)
 
 	code := "0"
 	msg := "Endorsed Item Successfully"
-	payloads := []string{txID}
+	payloads := []string{txID, endorser}
 	rsData := getResponseData(code, msg, payloads)
 	rs := new(ResponseMessage)
 	_ = json.Unmarshal(rsData, rs)
@@ -516,6 +631,8 @@ func (s *NFTChainCode) GetToken(ctx contractapi.TransactionContextInterface, sym
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("GetTokenEvent", rsData)
 		return rs, nil
 	}
 
@@ -528,10 +645,22 @@ func (s *NFTChainCode) GetToken(ctx contractapi.TransactionContextInterface, sym
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("GetTokenEvent", rsData)
 		return rs, nil
 	}
 
 	tokenData, _ := json.Marshal(nonFungibleToken)
+
+	eventPayload := &EventListenerMessage{
+		EventName:   "GetTokenEvent",
+		TxId:        "",
+		ItemId:      "",
+		SymbolId:    "",
+		Description: "Get Token Data Successfully",
+	}
+	invokeEventlistener(ctx, eventPayload)
+
 	py := string(tokenData)
 	code := "0"
 	msg := ""
@@ -540,6 +669,8 @@ func (s *NFTChainCode) GetToken(ctx contractapi.TransactionContextInterface, sym
 
 	rs := new(ResponseMessage)
 	_ = json.Unmarshal(rsData, rs)
+
+	// ctx.GetStub().SetEvent("GetTokenEvent", rsData)
 	return rs, nil
 
 }
@@ -548,7 +679,7 @@ func (s *NFTChainCode) GetToken(ctx contractapi.TransactionContextInterface, sym
 func (s *NFTChainCode) GetItem(ctx contractapi.TransactionContextInterface, symbols string, itemId string) (*ResponseMessage, error) {
 
 	tokenSymbol := symbols
-	itemID := []byte(itemId)
+	itemID := (itemId)
 
 	//1. Validation : Is this token-symbol existed ?
 	if TokenExists(ctx, tokenSymbol) == false {
@@ -560,6 +691,8 @@ func (s *NFTChainCode) GetItem(ctx contractapi.TransactionContextInterface, symb
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("GetItemEvent", rsData)
 		return rs, nil
 
 	}
@@ -574,6 +707,8 @@ func (s *NFTChainCode) GetItem(ctx contractapi.TransactionContextInterface, symb
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("GetItemEvent", rsData)
 		return rs, nil
 
 	}
@@ -587,11 +722,24 @@ func (s *NFTChainCode) GetItem(ctx contractapi.TransactionContextInterface, symb
 
 		rs := new(ResponseMessage)
 		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("GetItemEvent", rsData)
 		return rs, nil
 
 	}
 
 	itemData, _ := json.Marshal(nonFungibleTokenItem)
+
+	eventPayload := &EventListenerMessage{
+		Code:        "0",
+		EventName:   "GetItemEvent",
+		TxId:        "",
+		ItemId:      "",
+		SymbolId:    "",
+		Description: "Get Item Data Successfully",
+	}
+	invokeEventlistener(ctx, eventPayload)
+
 	py := string(itemData)
 	code := "0"
 	msg := ""
@@ -603,7 +751,7 @@ func (s *NFTChainCode) GetItem(ctx contractapi.TransactionContextInterface, symb
 
 }
 
-func IsItemIDExisted(ctx contractapi.TransactionContextInterface, symbol string, itemID []byte) bool {
+func IsItemIDExisted(ctx contractapi.TransactionContextInterface, symbol string, itemID string) bool {
 
 	item := getNonFungibleItem(ctx, symbol, itemID)
 	if item != nil {
@@ -611,6 +759,27 @@ func IsItemIDExisted(ctx contractapi.TransactionContextInterface, symbol string,
 	}
 
 	return false
+}
+
+// -- Chaincode Event Listener
+func invokeEventlistener(ctx contractapi.TransactionContextInterface, event *EventListenerMessage) {
+
+	PayloadData, _ := json.Marshal(event)
+
+	if event.EventName == "" {
+		msg := "event name can not be empty string"
+		fmt.Printf("\n %v", msg)
+		return
+	}
+
+	err := ctx.GetStub().SetEvent(event.EventName, PayloadData)
+	if err != nil {
+		msg := "Failed event listener : " + err.Error()
+		fmt.Printf("\n %v", msg)
+		return
+	}
+
+	return
 }
 
 func getNonFungibleToken(ctx contractapi.TransactionContextInterface, symbol string) *NFT {
@@ -632,7 +801,7 @@ func getNonFungibleToken(ctx contractapi.TransactionContextInterface, symbol str
 	return token
 }
 
-func getNonFungibleItem(ctx contractapi.TransactionContextInterface, symbol string, itemID []byte) *Item {
+func getNonFungibleItem(ctx contractapi.TransactionContextInterface, symbol string, itemID string) *Item {
 	itemKey := getNonFungibleItemKey(symbol, itemID)
 
 	itemValue, _ := getKey(ctx, string(itemKey))
@@ -646,7 +815,7 @@ func getNonFungibleItem(ctx contractapi.TransactionContextInterface, symbol stri
 	return item
 }
 
-func getNonFungibleItemKey(symbol string, itemID []byte) []byte {
+func getNonFungibleItemKey(symbol string, itemID string) []byte {
 	prefixNonFungibleItem := []byte("0x01") // prefix
 
 	key := make([]byte, 0, len(prefixNonFungibleItem)+1+len(symbol)+1+len(itemID))
@@ -654,12 +823,12 @@ func getNonFungibleItemKey(symbol string, itemID []byte) []byte {
 	key = append(key, ':')
 	key = append(key, []byte(symbol)...)
 	key = append(key, ':')
-	key = append(key, itemID...)
+	key = append(key, []byte(itemID)...)
 
 	return key
 }
 
-func getNonFungibleOwnerKey(symbol string, itemID []byte) []byte {
+func getNonFungibleOwnerKey(symbol string, itemID string) []byte {
 	prefixNonFungibleOwner := []byte("0x02") // prefix
 
 	key := make([]byte, 0, len(prefixNonFungibleOwner)+1+len(symbol)+1+len(itemID))
@@ -667,7 +836,7 @@ func getNonFungibleOwnerKey(symbol string, itemID []byte) []byte {
 	key = append(key, ':')
 	key = append(key, []byte(symbol)...)
 	key = append(key, ':')
-	key = append(key, itemID...)
+	key = append(key, []byte(itemID)...)
 
 	return key
 }
