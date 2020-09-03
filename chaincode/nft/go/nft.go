@@ -28,6 +28,7 @@ type Item struct {
 	Metadata     string
 	Properties   string
 	Endorsements []string
+	Remarks      []string
 }
 
 // responseMessage
@@ -45,6 +46,7 @@ type EventListenerMessage struct {
 	ItemId      string
 	SymbolId    string
 	Description string
+	Remarks     string
 }
 
 //================================================= start : testing purpose
@@ -168,6 +170,7 @@ func (s *NFTChainCode) Create(ctx contractapi.TransactionContextInterface, name 
 		ItemId:      "",
 		SymbolId:    tokenSymbol,
 		Description: "Create Token Successfully",
+		Remarks:     "",
 	}
 	invokeEventlistener(ctx, eventPayload)
 
@@ -284,6 +287,7 @@ func (s *NFTChainCode) Mint(ctx contractapi.TransactionContextInterface, symbols
 		ItemId:      itemId,
 		SymbolId:    "",
 		Description: "Mint Item Successfully",
+		Remarks:     "",
 	}
 	invokeEventlistener(ctx, eventPayload)
 
@@ -391,6 +395,7 @@ func (s *NFTChainCode) Burn(ctx contractapi.TransactionContextInterface, symbols
 		ItemId:      itemId,
 		SymbolId:    symbols,
 		Description: "Burn Item Successfully",
+		Remarks:     "",
 	}
 	invokeEventlistener(ctx, eventPayload)
 
@@ -499,6 +504,7 @@ func (s *NFTChainCode) Transfer(ctx contractapi.TransactionContextInterface, sym
 		ItemId:      itemId,
 		SymbolId:    "",
 		Description: "Transfer Item Successfully",
+		Remarks:     "",
 	}
 	invokeEventlistener(ctx, eventPayload)
 
@@ -513,7 +519,7 @@ func (s *NFTChainCode) Transfer(ctx contractapi.TransactionContextInterface, sym
 }
 
 // endorseNonFungibleTokenItem
-func (s *NFTChainCode) Endorse(ctx contractapi.TransactionContextInterface, symbols string, itemId string) (*ResponseMessage, error) {
+func (s *NFTChainCode) Endorse(ctx contractapi.TransactionContextInterface, symbols string, itemId string, remarks string) (*ResponseMessage, error) {
 
 	tokenSymbol := symbols
 	itemID := (itemId)
@@ -590,8 +596,15 @@ func (s *NFTChainCode) Endorse(ctx contractapi.TransactionContextInterface, symb
 
 	}
 
+	endorserLog := nonFungibleTokenItem.Endorsements
+	endorserLog = append(endorserLog, endorser)
+
+	remarksLog := nonFungibleTokenItem.Remarks
+	remarksLog = append(nonFungibleTokenItem.Remarks, remarks)
+
 	// update endorser
-	nonFungibleTokenItem.Endorsements = []string{endorser} // edit
+	nonFungibleTokenItem.Endorsements = endorserLog
+	nonFungibleTokenItem.Remarks = remarksLog
 	latestTokenItemData, _ := json.Marshal(nonFungibleTokenItem)
 	ctx.GetStub().PutState(string(itemKey), latestTokenItemData) // commit
 
@@ -603,12 +616,13 @@ func (s *NFTChainCode) Endorse(ctx contractapi.TransactionContextInterface, symb
 		ItemId:      itemId,
 		SymbolId:    symbols,
 		Description: "Endorsed Item Successfully",
+		Remarks:     remarks,
 	}
 	invokeEventlistener(ctx, eventPayload)
 
 	code := "0"
 	msg := "Endorsed Item Successfully"
-	payloads := []string{txID, endorser}
+	payloads := []string{txID, endorser, symbols, itemId, remarks}
 	rsData := getResponseData(code, msg, payloads)
 	rs := new(ResponseMessage)
 	_ = json.Unmarshal(rsData, rs)
@@ -658,6 +672,7 @@ func (s *NFTChainCode) GetToken(ctx contractapi.TransactionContextInterface, sym
 		ItemId:      "",
 		SymbolId:    "",
 		Description: "Get Token Data Successfully",
+		Remarks:     "",
 	}
 	invokeEventlistener(ctx, eventPayload)
 
@@ -737,6 +752,7 @@ func (s *NFTChainCode) GetItem(ctx contractapi.TransactionContextInterface, symb
 		ItemId:      "",
 		SymbolId:    "",
 		Description: "Get Item Data Successfully",
+		Remarks:     "",
 	}
 	invokeEventlistener(ctx, eventPayload)
 

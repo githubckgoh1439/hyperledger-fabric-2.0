@@ -5,7 +5,7 @@ const fs = require('fs');
 const path = require('path');
 
 
-const userRegister = "org1-admin"
+const userRegister = "appUser2"
 
 async function main() {
     try {
@@ -56,7 +56,7 @@ async function main() {
                 var details = event.payload.toString('utf8');     
                 details = JSON.parse(details)
  
-                // eg. {"Code":"0","EventName":"CreateEvent","TxId":"09d21ddd5ab977e1dcce0159a4c96b7902adf3fef293870a90d282f0efd7fcda","ItemId":"","SymbolId":"symbol-116","Description":"Create Token Successfully"}
+                // eg. {"Code":"0","EventName":"CreateEvent","TxId":"09d21ddd5ab977e1dcce0159a4c96b7902adf3fef293870a90d282f0efd7fcda","ItemId":"","SymbolId":"symbol-771","Description":"Create Token Successfully"}
                 console.log('Create Event Listener: ' + JSON.stringify(details));
             }else if (event.eventName === 'GetTokenEvent') {
                 var details = event.payload.toString('utf8');    
@@ -78,7 +78,7 @@ async function main() {
                 var details = event.payload.toString('utf8');    
                 details = JSON.parse(details)
  
-                // eg. {"Code":"0","EventName":"BurnEvent","TxId":"c6e72533a70e9d2d6db8af5aa1a722a057023b1f34899ccfd7b28a7e6734eda0","ItemId":"116-b-b-ITEM","SymbolId":"symbol-116","Description":"Burn Item Successfully"}
+                // eg. {"Code":"0","EventName":"BurnEvent","TxId":"c6e72533a70e9d2d6db8af5aa1a722a057023b1f34899ccfd7b28a7e6734eda0","ItemId":"116-b-b-ITEM","SymbolId":"symbol-771","Description":"Burn Item Successfully"}
                 console.log('Burn-item Event Listener: ' + JSON.stringify(details));
             }else if (event.eventName === 'TransferEvent') {
                 var details = event.payload.toString('utf8');    
@@ -90,7 +90,7 @@ async function main() {
                 var details = event.payload.toString('utf8');    
                 details = JSON.parse(details)
  
-                // eg. {"Code":"0","EventName":"EndorseEvent","TxId":"e0d1421b12a78efa46a765d6de321d83ab87a93af26f6362c4779ef638aa154f","ItemId":"116-b-b-ITEM","SymbolId":"symbol-116","Description":"Endorsed Item Successfully"}
+                // eg. {"Code":"0","EventName":"EndorseEvent","TxId":"e0d1421b12a78efa46a765d6de321d83ab87a93af26f6362c4779ef638aa154f","ItemId":"116-b-b-ITEM","SymbolId":"symbol-771","Description":"Endorsed Item Successfully"}
                 console.log('Endorse-item Event Listener: ' + JSON.stringify(details));
             }
 
@@ -101,7 +101,7 @@ async function main() {
 
         //// 1. Create-token : name, symbols, metadata, totalSupplys
         ///{"Args":["create","symbol57_name","symbol57","metadata_123456789","3"]}
-        // var returnvalue_create = await contract.submitTransaction('create','symbol-0041_name','symbol-0041','metadata_123456789','13');  
+        // var returnvalue_create = await contract.submitTransaction('create','symbol-771_name','symbol-771','metadata_123456789','13');  
         // console.log('\nTransaction has been submitted' + returnvalue_create);
 
         //option-2 : Create token
@@ -110,40 +110,40 @@ async function main() {
         // console.log('\nTransaction has been submitted' + returnvalue_create);
         
         ////1.1  '{"Args":["getToken","symbol57"]}'
-        // var returnvalue_getToken =  await contract.evaluateTransaction('getToken', 'symbol-116');
+        // var returnvalue_getToken =  await contract.evaluateTransaction('getToken', 'symbol-771');
         // console.log('\nTransaction has been evaluated for GETTOKEN : ' + returnvalue_getToken);
 
         // ////2. Mint-item : symbols, owner, itemId, properties, metadata
         // '{"Args":["mint","symbol57", "goh111", "57-ITEM", "properties: 57-ITEM", "metadata: 57-ITEM"]}'
-        // var returnvalue_mint = await contract.submitTransaction('mint','symbol-0041', 'goh111', '0041-b-b-ITEM', 'properties: xxxx-ITEM', 'metadata: xxxx-ITEM');    
+        // var returnvalue_mint = await contract.submitTransaction('mint','symbol-771', 'appUser2', '771-ITEM', 'properties: xxxx-ITEM', 'metadata: xxxx-ITEM');    
         // console.log('\nTransaction has been submitted' + returnvalue_mint);
 
         // // ////2.1  '{"Args":["getItem","symbol57", "57-ITEM"]}'
-        // var returnvalue_getItem = await contract.evaluateTransaction('getItem', 'symbol-0041', '0820-ITEM');
+        // var returnvalue_getItem = await contract.evaluateTransaction('getItem', 'symbol-771', '771-ITEM');
         // console.log('\nTransaction has been evaluated for GETITEM: ' + returnvalue_getItem);
 
-        // // ////3. Endorse : {'Args':['endorse', '11symbol', 'item211']}'
-        // var returnvalue_endorse = await contract.submitTransaction('endorse', 'symbol-0041', '0041-b-b-ITEM');
+        // // ////3. Endorse : {'Args':['endorse', 'symbol-771', '771-ITEM']}'
+        // var returnvalue_endorse = await contract.submitTransaction('endorse', 'symbol-771', '771-ITEM', 'remarks: endorsed by XXX');
         // console.log('\nTransaction has been submitted for ENDORSE: ' + returnvalue_endorse);
 
-        // // ////4.  '{'Args':['getItem', '11symbol', 'item211']}'
-        // var returnvalue_getItem = await contract.evaluateTransaction('getItem', 'symbol65', '65-ITEM');
+        // // ////4.  '{'Args':['getItem', 'symbol-771', '771-ITEM']}'
+        // var returnvalue_getItem = await contract.evaluateTransaction('getItem', 'symbol-771', '771-ITEM');
         // console.log('\nTransaction has been evaluated for GETITEM: ' + returnvalue_getItem);
 
-        // //5. Transfer-item: '{'Args':['transfer', '11symbol', 'goh11', 'naga99', 'item211']}'
-        // var returnvalue_transfer = await contract.submitTransaction('transfer', 'symbol-0041', 'goh111', 'naga-9988', '0041-b-b-ITEM');
+        // //5. Transfer-item: '{'Args':['transfer', 'symbol-771', 'goh11', 'naga99', '771-ITEM']}'
+        // var returnvalue_transfer = await contract.submitTransaction('transfer', 'symbol-771', 'goh111', 'naga-9988', '771-ITEM');
         // console.log('\nTransaction has been submitted for TRANSFER: ' + returnvalue_transfer);
 
-        // //5.2  '{'Args':['getItem', '11symbol', 'item211']}'
-        // var returnvalue_getItem =  await contract.evaluateTransaction('getItem', 'symbol65', '65-ITEM');
+        // //5.2  '{'Args':['getItem', 'symbol-771', '771-ITEM']}'
+        // var returnvalue_getItem =  await contract.evaluateTransaction('getItem', 'symbol-771', '771-ITEM');
         // console.log('\nTransaction has been evaluated for GETITEM : ' + returnvalue_getItem);
  
-        // //6. Burn-item : '{'Args':['burn', '11symbol',  'naga99', 'item211']}'
-        // var returnvalue_burn = await contract.submitTransaction('burn', 'symbol-0041',  'naga-9988', '0041-b-b-ITEM');
+        // //6. Burn-item : '{'Args':['burn', 'symbol-771',  'naga99', '771-ITEM']}'
+        // var returnvalue_burn = await contract.submitTransaction('burn', 'symbol-771',  'naga-9988', '771-ITEM');
         // console.log('\nTransaction has been submitted for BURN: ' + returnvalue_burn);
 
-        // //7.  '{'Args':['getItem', '11symbol', 'item211']}'
-        // var returnvalue_getItem =  await contract.evaluateTransaction('getItem', 'symbol65', '65-ITEM');
+        // //7.  '{'Args':['getItem', 'symbol-771', '771-ITEM']}'
+        // var returnvalue_getItem =  await contract.evaluateTransaction('getItem', 'symbol-771', '771-ITEM');
         // console.log('\nTransaction has been evaluated for GETITEM : ' + returnvalue_getItem);
 
 
