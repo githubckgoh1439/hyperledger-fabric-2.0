@@ -92,6 +92,12 @@ async function main() {
  
                 // eg. {"Code":"0","EventName":"EndorseEvent","TxId":"e0d1421b12a78efa46a765d6de321d83ab87a93af26f6362c4779ef638aa154f","ItemId":"116-b-b-ITEM","SymbolId":"symbol-771","Description":"Endorsed Item Successfully"}
                 console.log('Endorse-item Event Listener: ' + JSON.stringify(details));
+            }else if (event.eventName === 'UpdateItemMetadataEvent') {
+                var details = event.payload.toString('utf8');    
+                details = JSON.parse(details)
+ 
+                // eg. {"Code":"0","EventName":"UpdateItemMetadataEvent","TxId":"4298847a33a3dc4c0812665ac5ef641ba007cf2547b9f5b13aa8336346f9659e","ItemId":"771-ITEM","SymbolId":"symbol-771","Description":"Update Item Metadata Successfully"}
+                console.log('Update-item-Metadata Event Listener: ' + JSON.stringify(details));
             }
 
         };

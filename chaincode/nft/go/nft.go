@@ -176,7 +176,7 @@ func (s *NFTChainCode) Create(ctx contractapi.TransactionContextInterface, name 
 
 	code := "0"
 	msg := "Create Token Successfully"
-	payloads := []string{txID, invoker}
+	payloads := []string{txID, invoker, tokenSymbol}
 	rsData := getResponseData(code, msg, payloads)
 	rs := new(ResponseMessage)
 	_ = json.Unmarshal(rsData, rs)
@@ -283,9 +283,8 @@ func (s *NFTChainCode) Mint(ctx contractapi.TransactionContextInterface, symbols
 	eventPayload := &EventListenerMessage{
 		Code:        "0",
 		EventName:   "MintEvent",
-		TxId:        txID,
 		ItemId:      itemId,
-		SymbolId:    "",
+		SymbolId:    symbols,
 		Description: "Mint Item Successfully",
 		Remarks:     "",
 	}
@@ -293,7 +292,7 @@ func (s *NFTChainCode) Mint(ctx contractapi.TransactionContextInterface, symbols
 
 	code := "0"
 	msg := "Mint Item Successfully"
-	payloads := []string{txID}
+	payloads := []string{txID, symbols, itemId}
 	rsData := getResponseData(code, msg, payloads)
 	rs := new(ResponseMessage)
 	_ = json.Unmarshal(rsData, rs)
@@ -502,7 +501,7 @@ func (s *NFTChainCode) Transfer(ctx contractapi.TransactionContextInterface, sym
 		EventName:   "TransferEvent",
 		TxId:        txID,
 		ItemId:      itemId,
-		SymbolId:    "",
+		SymbolId:    symbols,
 		Description: "Transfer Item Successfully",
 		Remarks:     "",
 	}
@@ -614,7 +613,7 @@ func (s *NFTChainCode) Endorse(ctx contractapi.TransactionContextInterface, symb
 		EventName:   "EndorseEvent",
 		TxId:        txID,
 		ItemId:      itemId,
-		SymbolId:    symbols,
+		SymbolId:    tokenSymbol,
 		Description: "Endorsed Item Successfully",
 		Remarks:     remarks,
 	}
@@ -623,6 +622,103 @@ func (s *NFTChainCode) Endorse(ctx contractapi.TransactionContextInterface, symb
 	code := "0"
 	msg := "Endorsed Item Successfully"
 	payloads := []string{txID, endorser, symbols, itemId, remarks}
+	rsData := getResponseData(code, msg, payloads)
+	rs := new(ResponseMessage)
+	_ = json.Unmarshal(rsData, rs)
+	return rs, nil
+
+}
+
+// UpdateItemMetadata
+func (s *NFTChainCode) UpdateItemMetadata(ctx contractapi.TransactionContextInterface, symbols string, owner string, itemId string, itemMetadata string) (*ResponseMessage, error) {
+
+	tokenSymbol := symbols
+	itemIDOwner := owner // who is the itemID-owner
+	itemID := (itemId)
+
+	//1. Validation : Is this token-symbol existed ?
+	if TokenExists(ctx, tokenSymbol) == false {
+		code := "99"
+		msg := "Symbol not exist"
+		payloads := []string{}
+		rsData := getResponseData(code, msg, payloads)
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("UpdateItemMetadataEvent", rsData)
+		return rs, nil
+
+	}
+
+	//2. Validation : Is this itemID existed ?
+	if IsItemIDExisted(ctx, tokenSymbol, itemID) == false {
+
+		code := "99"
+		msg := "ItemID not exist"
+		payloads := []string{}
+		rsData := getResponseData(code, msg, payloads)
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("UpdateItemMetadataEvent", rsData)
+		return rs, nil
+
+	}
+
+	//3 : Get the info of : ownerKey, itemKey
+	itemKey := getNonFungibleItemKey(tokenSymbol, itemID)
+	itemData, _ := ctx.GetStub().GetState(string(itemKey))
+	item := &Item{}
+	json.Unmarshal(itemData, &item)
+
+	itemOwnerKey := getNonFungibleOwnerKey(tokenSymbol, itemID)
+	itemOwnerData, _ := ctx.GetStub().GetState(string(itemOwnerKey))
+
+	// Validation : Is the item-owner matched with params-itemIDOwner? if not, not allowed to proceed.
+	if string(itemOwnerData) != itemIDOwner {
+
+		code := "99"
+		msg := "ItemId owner not match. Not allowed to proceed"
+		payloads := []string{}
+		rsData := getResponseData(code, msg, payloads)
+
+		rs := new(ResponseMessage)
+		_ = json.Unmarshal(rsData, rs)
+
+		ctx.GetStub().SetEvent("UpdateItemMetadataEvent", rsData)
+		return rs, nil
+
+	}
+
+	//4. Create non-fungibletokenitem & assigned to this new-ItemOwner
+	//4.1 Create this new-token-item which is unique
+	item = &Item{
+		ItemId:       itemID,
+		Properties:   item.Properties,
+		Metadata:     itemMetadata,
+		Endorsements: item.Endorsements,
+	}
+	itemKey = getNonFungibleItemKey(tokenSymbol, itemID)
+	itemData, _ = json.Marshal(item)
+	ctx.GetStub().PutState(string(itemKey), itemData)
+
+	txID := ctx.GetStub().GetTxID()
+	eventPayload := &EventListenerMessage{
+		Code:        "0",
+		EventName:   "UpdateItemMetadataEvent",
+		TxId:        txID,
+		ItemId:      itemId,
+		SymbolId:    symbols,
+		Description: "Update Item Metadata Successfully",
+		Remarks:     itemMetadata,
+	}
+	invokeEventlistener(ctx, eventPayload)
+
+	code := "0"
+	msg := "Update Item Metadata Successfully"
+	payloads := []string{txID, symbols, itemId, itemMetadata}
 	rsData := getResponseData(code, msg, payloads)
 	rs := new(ResponseMessage)
 	_ = json.Unmarshal(rsData, rs)
