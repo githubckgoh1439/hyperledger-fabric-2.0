@@ -6,23 +6,23 @@
 version: "2"
 
 volumes:
-  orderer.example.com:
-  orderer1.example.com:
-  orderer2.example.com:
-  orderer3.example.com:
-  orderer4.example.com:
-  peer0.org1.example.com:
-  peer0.org2.example.com:
+  orderer.sample.com:
+  orderer2.sample.com:
+  orderer3.sample.com:
+  orderer4.sample.com:
+  orderer5.sample.com:
+  peer0.org1.sample.com:
+  peer0.org2.sample.com:
 
 networks:
   test:
 
 services:
-  orderer.example.com:
-    container_name: orderer.example.com
+  orderer.sample.com:
+    container_name: orderer.sample.com
     image: hyperledger/fabric-orderer:$IMAGE_TAG
     environment:
-      - FABRIC_LOGGING_SPEC=INFO
+      - FABRIC_LOGGING_SPEC=DEBUG
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
       - ORDERER_GENERAL_LISTENPORT=7050
       - ORDERER_GENERAL_GENESISMETHOD=file
@@ -43,21 +43,21 @@ services:
     command: orderer
     volumes:
       - ../system-genesis-block/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
-      - ../organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp:/var/hyperledger/orderer/msp
-      - ../organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/:/var/hyperledger/orderer/tls
-      - orderer.example.com:/var/hyperledger/production/orderer
+      - ../organizations/ordererOrganizations/sample.com/orderers/orderer.sample.com/msp:/var/hyperledger/orderer/msp
+      - ../organizations/ordererOrganizations/sample.com/orderers/orderer.sample.com/tls/:/var/hyperledger/orderer/tls
+      - orderer.sample.com:/var/hyperledger/production/orderer
     ports:
       - 7050:7050
     networks:
       - test
 
-  orderer1.example.com:
-    container_name: orderer1.example.com
+  orderer2.sample.com:
+    container_name: orderer2.sample.com
     image: hyperledger/fabric-orderer:$IMAGE_TAG
     environment:
-      - FABRIC_LOGGING_SPEC=INFO
+      - FABRIC_LOGGING_SPEC=DEBUG
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
-      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_LISTENPORT=5050
       - ORDERER_GENERAL_GENESISMETHOD=file
       - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
       - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
@@ -76,21 +76,21 @@ services:
     command: orderer
     volumes:
       - ../system-genesis-block/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
-      - ../organizations/ordererOrganizations/example.com/orderers/orderer1.example.com/msp:/var/hyperledger/orderer/msp
-      - ../organizations/ordererOrganizations/example.com/orderers/orderer1.example.com/tls/:/var/hyperledger/orderer/tls
-      - orderer1.example.com:/var/hyperledger/production/orderer
+      - ../organizations/ordererOrganizations/sample.com/orderers/orderer2.sample.com/msp:/var/hyperledger/orderer/msp
+      - ../organizations/ordererOrganizations/sample.com/orderers/orderer2.sample.com/tls/:/var/hyperledger/orderer/tls
+      - orderer2.sample.com:/var/hyperledger/production/orderer
     ports:
-      - 7082:7050
+      - 5050:5050
     networks:
       - test
 
-  orderer2.example.com:
-    container_name: orderer2.example.com
+  orderer3.sample.com:
+    container_name: orderer3.sample.com
     image: hyperledger/fabric-orderer:$IMAGE_TAG
     environment:
-      - FABRIC_LOGGING_SPEC=INFO
+      - FABRIC_LOGGING_SPEC=DEBUG
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
-      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_LISTENPORT=6050
       - ORDERER_GENERAL_GENESISMETHOD=file
       - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
       - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
@@ -109,21 +109,21 @@ services:
     command: orderer
     volumes:
       - ../system-genesis-block/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
-      - ../organizations/ordererOrganizations/example.com/orderers/orderer2.example.com/msp:/var/hyperledger/orderer/msp
-      - ../organizations/ordererOrganizations/example.com/orderers/orderer2.example.com/tls/:/var/hyperledger/orderer/tls
-      - orderer2.example.com:/var/hyperledger/production/orderer
+      - ../organizations/ordererOrganizations/sample.com/orderers/orderer3.sample.com/msp:/var/hyperledger/orderer/msp
+      - ../organizations/ordererOrganizations/sample.com/orderers/orderer3.sample.com/tls/:/var/hyperledger/orderer/tls
+      - orderer3.sample.com:/var/hyperledger/production/orderer
     ports:
-      - 7084:7050
+      - 6050:6050
     networks:
       - test
 
-  orderer3.example.com:
-    container_name: orderer3.example.com
+  orderer4.sample.com:
+    container_name: orderer4.sample.com
     image: hyperledger/fabric-orderer:$IMAGE_TAG
     environment:
-      - FABRIC_LOGGING_SPEC=INFO
+      - FABRIC_LOGGING_SPEC=DEBUG
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
-      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_LISTENPORT=8050
       - ORDERER_GENERAL_GENESISMETHOD=file
       - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
       - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
@@ -142,21 +142,21 @@ services:
     command: orderer
     volumes:
       - ../system-genesis-block/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
-      - ../organizations/ordererOrganizations/example.com/orderers/orderer3.example.com/msp:/var/hyperledger/orderer/msp
-      - ../organizations/ordererOrganizations/example.com/orderers/orderer3.example.com/tls/:/var/hyperledger/orderer/tls
-      - orderer3.example.com:/var/hyperledger/production/orderer
+      - ../organizations/ordererOrganizations/sample.com/orderers/orderer4.sample.com/msp:/var/hyperledger/orderer/msp
+      - ../organizations/ordererOrganizations/sample.com/orderers/orderer4.sample.com/tls/:/var/hyperledger/orderer/tls
+      - orderer4.sample.com:/var/hyperledger/production/orderer
     ports:
-      - 7086:7050
+      - 8050:8050
     networks:
       - test
 
-  orderer4.example.com:
-    container_name: orderer4.example.com
+  orderer5.sample.com:
+    container_name: orderer5.sample.com
     image: hyperledger/fabric-orderer:$IMAGE_TAG
     environment:
       - FABRIC_LOGGING_SPEC=INFO
       - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
-      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_LISTENPORT=9050
       - ORDERER_GENERAL_GENESISMETHOD=file
       - ORDERER_GENERAL_GENESISFILE=/var/hyperledger/orderer/orderer.genesis.block
       - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
@@ -175,16 +175,16 @@ services:
     command: orderer
     volumes:
       - ../system-genesis-block/genesis.block:/var/hyperledger/orderer/orderer.genesis.block
-      - ../organizations/ordererOrganizations/example.com/orderers/orderer4.example.com/msp:/var/hyperledger/orderer/msp
-      - ../organizations/ordererOrganizations/example.com/orderers/orderer4.example.com/tls/:/var/hyperledger/orderer/tls
-      - orderer4.example.com:/var/hyperledger/production/orderer
+      - ../organizations/ordererOrganizations/sample.com/orderers/orderer5.sample.com/msp:/var/hyperledger/orderer/msp
+      - ../organizations/ordererOrganizations/sample.com/orderers/orderer5.sample.com/tls/:/var/hyperledger/orderer/tls
+      - orderer5.sample.com:/var/hyperledger/production/orderer
     ports:
-      - 7088:7050
+      - 9050:9050
     networks:
       - test
 
-  peer0.org1.example.com:
-    container_name: peer0.org1.example.com
+  peer0.org1.sample.com:
+    container_name: peer0.org1.sample.com
     image: hyperledger/fabric-peer:$IMAGE_TAG
     environment:
       #Generic peer variables
@@ -203,19 +203,19 @@ services:
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
       # Peer specific variabes
-      - CORE_PEER_ID=peer0.org1.example.com
-      - CORE_PEER_ADDRESS=peer0.org1.example.com:7051
+      - CORE_PEER_ID=peer0.org1.sample.com
+      - CORE_PEER_ADDRESS=peer0.org1.sample.com:7051
       - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
-      - CORE_PEER_CHAINCODEADDRESS=peer0.org1.example.com:7052
+      - CORE_PEER_CHAINCODEADDRESS=peer0.org1.sample.com:7052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org1.example.com:7051
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.example.com:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org1.sample.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org1.sample.com:7051
       - CORE_PEER_LOCALMSPID=Org1MSP
     volumes:
       - /var/run/:/host/var/run/
-      - ../organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/msp:/etc/hyperledger/fabric/msp
-      - ../organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls:/etc/hyperledger/fabric/tls
-      - peer0.org1.example.com:/var/hyperledger/production
+      - ../organizations/peerOrganizations/org1.sample.com/peers/peer0.org1.sample.com/msp:/etc/hyperledger/fabric/msp
+      - ../organizations/peerOrganizations/org1.sample.com/peers/peer0.org1.sample.com/tls:/etc/hyperledger/fabric/tls
+      - peer0.org1.sample.com:/var/hyperledger/production
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: peer node start
     ports:
@@ -223,8 +223,9 @@ services:
     networks:
       - test
 
-  peer0.org2.example.com:
-    container_name: peer0.org2.example.com
+
+  peer0.org2.sample.com:
+    container_name: peer0.org2.sample.com
     image: hyperledger/fabric-peer:$IMAGE_TAG
     environment:
       #Generic peer variables
@@ -243,19 +244,19 @@ services:
       - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
       - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
       # Peer specific variabes
-      - CORE_PEER_ID=peer0.org2.example.com
-      - CORE_PEER_ADDRESS=peer0.org2.example.com:9051
+      - CORE_PEER_ID=peer0.org2.sample.com
+      - CORE_PEER_ADDRESS=peer0.org2.sample.com:9051
       - CORE_PEER_LISTENADDRESS=0.0.0.0:9051
-      - CORE_PEER_CHAINCODEADDRESS=peer0.org2.example.com:9052
+      - CORE_PEER_CHAINCODEADDRESS=peer0.org2.sample.com:9052
       - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9052
-      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org2.example.com:9051
-      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org2.example.com:9051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.org2.sample.com:9051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.org2.sample.com:9051
       - CORE_PEER_LOCALMSPID=Org2MSP
     volumes:
       - /var/run/:/host/var/run/
-      - ../organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/msp:/etc/hyperledger/fabric/msp
-      - ../organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls:/etc/hyperledger/fabric/tls
-      - peer0.org2.example.com:/var/hyperledger/production
+      - ../organizations/peerOrganizations/org2.sample.com/peers/peer0.org2.sample.com/msp:/etc/hyperledger/fabric/msp
+      - ../organizations/peerOrganizations/org2.sample.com/peers/peer0.org2.sample.com/tls:/etc/hyperledger/fabric/tls
+      - peer0.org2.sample.com:/var/hyperledger/production
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric/peer
     command: peer node start
     ports:

@@ -25,7 +25,7 @@ Organizations:
         ID: OrdererMSP
 
         # MSPDir is the filesystem path which contains the MSP configuration
-        MSPDir: ../organizations/ordererOrganizations/example.com/msp
+        MSPDir: ../organizations/ordererOrganizations/sample.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -42,11 +42,12 @@ Organizations:
                 Rule: "OR('OrdererMSP.admin')"
 
         OrdererEndpoints:
-            - orderer.example.com:7050
-            - orderer1.example.com:7050
-            - orderer2.example.com:7050
-            - orderer3.example.com:7050
-            - orderer4.example.com:7050
+            - orderer.sample.com:7050
+            - orderer2.sample.com:5050
+            - orderer3.sample.com:6050
+            - orderer4.sample.com:8050
+            - orderer5.sample.com:9050
+
 
 
     - &Org1
@@ -57,7 +58,7 @@ Organizations:
         # ID to load the MSP definition as
         ID: Org1MSP
 
-        MSPDir: ../organizations/peerOrganizations/org1.example.com/msp
+        MSPDir: ../organizations/peerOrganizations/org1.sample.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -81,7 +82,7 @@ Organizations:
             # AnchorPeers defines the location of peers which can be used
             # for cross org gossip communication.  Note, this value is only
             # encoded in the genesis block in the Application section context
-            - Host: peer0.org1.example.com
+            - Host: peer0.org1.sample.com
               Port: 7051
 
     - &Org2
@@ -92,7 +93,7 @@ Organizations:
         # ID to load the MSP definition as
         ID: Org2MSP
 
-        MSPDir: ../organizations/peerOrganizations/org2.example.com/msp
+        MSPDir: ../organizations/peerOrganizations/org2.sample.com/msp
 
         # Policies defines the set of policies at this level of the config tree
         # For organization policies, their canonical path is usually
@@ -115,7 +116,7 @@ Organizations:
             # AnchorPeers defines the location of peers which can be used
             # for cross org gossip communication.  Note, this value is only
             # encoded in the genesis block in the Application section context
-            - Host: peer0.org2.example.com
+            - Host: peer0.org2.sample.com
               Port: 9051
 
 ################################################################################
@@ -223,30 +224,6 @@ Orderer: &OrdererDefaults
     # Orderer Type: The orderer implementation to start
     OrdererType: etcdraft
 
-    EtcdRaft:
-        Consenters:
-        - Host: orderer.example.com
-          Port: 7050
-          ClientTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
-          ServerTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer.example.com/tls/server.crt
-        - Host: orderer1.example.com
-          Port: 7050
-          ClientTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer1.example.com/tls/server.crt
-          ServerTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer1.example.com/tls/server.crt
-        - Host: orderer2.example.com
-          Port: 7050
-          ClientTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer2.example.com/tls/server.crt
-          ServerTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer2.example.com/tls/server.crt
-        - Host: orderer3.example.com
-          Port: 7050
-          ClientTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer3.example.com/tls/server.crt
-          ServerTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer3.example.com/tls/server.crt
-        - Host: orderer4.example.com
-          Port: 7050
-          ClientTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer4.example.com/tls/server.crt
-          ServerTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer4.example.com/tls/server.crt
-
-
     # Batch Timeout: The amount of time to wait before creating a batch
     BatchTimeout: 2s
 
@@ -334,6 +311,35 @@ Profiles:
         <<: *ChannelDefaults
         Orderer:
             <<: *OrdererDefaults
+            OrdererType: etcdraft
+            EtcdRaft:
+                Consenters:
+                - Host: orderer.sample.com
+                  Port: 7050
+                  ClientTLSCert: ../organizations/ordererOrganizations/sample.com/orderers/orderer.sample.com/tls/server.crt
+                  ServerTLSCert: ../organizations/ordererOrganizations/sample.com/orderers/orderer.sample.com/tls/server.crt
+                - Host: orderer2.sample.com
+                  Port: 5050
+                  ClientTLSCert: ../organizations/ordererOrganizations/sample.com/orderers/orderer2.sample.com/tls/server.crt
+                  ServerTLSCert: ../organizations/ordererOrganizations/sample.com/orderers/orderer2.sample.com/tls/server.crt
+                - Host: orderer3.sample.com
+                  Port: 6050
+                  ClientTLSCert: ../organizations/ordererOrganizations/sample.com/orderers/orderer3.sample.com/tls/server.crt
+                  ServerTLSCert: ../organizations/ordererOrganizations/sample.com/orderers/orderer3.sample.com/tls/server.crt
+                - Host: orderer4.sample.com
+                  Port: 8050
+                  ClientTLSCert: ../organizations/ordererOrganizations/sample.com/orderers/orderer4.sample.com/tls/server.crt
+                  ServerTLSCert: ../organizations/ordererOrganizations/sample.com/orderers/orderer4.sample.com/tls/server.crt
+                - Host: orderer5.sample.com
+                  Port: 9050
+                  ClientTLSCert: ../organizations/ordererOrganizations/sample.com/orderers/orderer5.sample.com/tls/server.crt
+                  ServerTLSCert: ../organizations/ordererOrganizations/sample.com/orderers/orderer5.sample.com/tls/server.crt
+            Addresses:
+                - orderer.sample.com:7050
+                - orderer2.sample.com:5050
+                - orderer3.sample.com:6050
+                - orderer4.sample.com:8050
+                - orderer5.sample.com:9050
             Organizations:
                 - *OrdererOrg
             Capabilities:
@@ -343,6 +349,7 @@ Profiles:
                 Organizations:
                     - *Org1
                     - *Org2
+
     TwoOrgsChannel:
         Consortium: SampleConsortium
         <<: *ChannelDefaults
@@ -351,5 +358,6 @@ Profiles:
             Organizations:
                 - *Org1
                 - *Org2
+
             Capabilities:
                 <<: *ApplicationCapabilities

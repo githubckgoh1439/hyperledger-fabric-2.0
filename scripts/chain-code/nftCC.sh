@@ -13,38 +13,38 @@ VERBOSE="$6"
 : ${VERBOSE:="false"}
 CC_SRC_LANGUAGE=`echo "$CC_SRC_LANGUAGE" | tr [:upper:] [:lower:]`
 
-FABRIC_CFG_PATH=$PWD/../config/
+FABRIC_CFG_PATH=$PWD/config/
 
 if [ "$CC_SRC_LANGUAGE" = "go" -o "$CC_SRC_LANGUAGE" = "golang" ] ; then
 	CC_RUNTIME_LANGUAGE=golang
-	CC_SRC_PATH="../chaincode/fabcar/go/"
+	CC_SRC_PATH="./chaincode/nft/go/"
 
 	echo Vendoring Go dependencies ...
-	pushd ../chaincode/fabcar/go
+	pushd ../chaincode/nft/go
 	GO111MODULE=on go mod vendor
 	popd
 	echo Finished vendoring Go dependencies
 
 elif [ "$CC_SRC_LANGUAGE" = "javascript" ]; then
 	CC_RUNTIME_LANGUAGE=node # chaincode runtime language is node.js
-	CC_SRC_PATH="../chaincode/fabcar/javascript/"
+	CC_SRC_PATH="../chaincode/nft/javascript/"
 
 elif [ "$CC_SRC_LANGUAGE" = "java" ]; then
 	CC_RUNTIME_LANGUAGE=java
-	CC_SRC_PATH="../chaincode/fabcar/java/build/install/fabcar"
+	CC_SRC_PATH="../chaincode/nft/java/build/install/nft"
 
 	echo Compiling Java code ...
-	pushd ../chaincode/fabcar/java
+	pushd ../chaincode/nft/java
 	./gradlew installDist
 	popd
 	echo Finished compiling Java code
 
 elif [ "$CC_SRC_LANGUAGE" = "typescript" ]; then
 	CC_RUNTIME_LANGUAGE=node # chaincode runtime language is node.js
-	CC_SRC_PATH="../chaincode/fabcar/typescript/"
+	CC_SRC_PATH="../chaincode/nft/typescript/"
 
 	echo Compiling TypeScript code into JavaScript ...
-	pushd ../chaincode/fabcar/typescript
+	pushd ../chaincode/nft/typescript
 	npm install
 	npm run build
 	popd
@@ -64,7 +64,7 @@ packageChaincode() {
   ORG=$1
   setGlobals $ORG
   set -x
-  peer lifecycle chaincode package fabcar.tar.gz --path ${CC_SRC_PATH} --lang ${CC_RUNTIME_LANGUAGE} --label fabcar_${VERSION} >&log.txt
+  peer lifecycle chaincode package nft.tar.gz --path ${CC_SRC_PATH} --lang ${CC_RUNTIME_LANGUAGE} --label nft_${VERSION} >&log.txt
   res=$?
   set +x
   cat log.txt
@@ -78,7 +78,7 @@ installChaincode() {
   ORG=$1
   setGlobals $ORG
   set -x
-  peer lifecycle chaincode install fabcar.tar.gz >&log.txt
+  peer lifecycle chaincode install nft.tar.gz >&log.txt
   res=$?
   set +x
   cat log.txt
@@ -96,7 +96,7 @@ queryInstalled() {
   res=$?
   set +x
   cat log.txt
-	PACKAGE_ID=$(sed -n "/fabcar_${VERSION}/{s/^Package ID: //; s/, Label:.*$//; p;}" log.txt)
+	PACKAGE_ID=$(sed -n "/nft_${VERSION}/{s/^Package ID: //; s/, Label:.*$//; p;}" log.txt)
   verifyResult $res "Query installed on peer0.org${ORG} has failed"
   echo PackageID is ${PACKAGE_ID}
   echo "===================== Query installed successful on peer0.org${ORG} on channel ===================== "
@@ -108,7 +108,7 @@ approveForMyOrg() {
   ORG=$1
   setGlobals $ORG
   set -x
-  peer lifecycle chaincode approveformyorg -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA --channelID $CHANNEL_NAME --name fabcar --version ${VERSION} --init-required --package-id ${PACKAGE_ID} --sequence ${VERSION} >&log.txt
+  peer lifecycle chaincode approveformyorg -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA --channelID $CHANNEL_NAME --name nft --version ${VERSION} --init-required --package-id ${PACKAGE_ID} --sequence ${VERSION} >&log.txt
   set +x
   cat log.txt
   verifyResult $res "Chaincode definition approved on peer0.org${ORG} on channel '$CHANNEL_NAME' failed"
@@ -130,7 +130,7 @@ checkCommitReadiness() {
     sleep $DELAY
     echo "Attempting to check the commit readiness of the chaincode definition on peer0.org${ORG} secs"
     set -x
-    peer lifecycle chaincode checkcommitreadiness --channelID $CHANNEL_NAME --name fabcar --version ${VERSION} --sequence ${VERSION} --output json --init-required >&log.txt
+    peer lifecycle chaincode checkcommitreadiness --channelID $CHANNEL_NAME --name nft --version ${VERSION} --sequence ${VERSION} --output json --init-required >&log.txt
     res=$?
     set +x
     let rc=0
@@ -160,7 +160,7 @@ commitChaincodeDefinition() {
   # peer (if join was successful), let's supply it directly as we know
   # it using the "-o" option
   set -x
-  peer lifecycle chaincode commit -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA --channelID $CHANNEL_NAME --name fabcar $PEER_CONN_PARMS --version ${VERSION} --sequence ${VERSION} --init-required >&log.txt
+  peer lifecycle chaincode commit -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA --channelID $CHANNEL_NAME --name nft $PEER_CONN_PARMS --version ${VERSION} --sequence ${VERSION} --init-required >&log.txt
   res=$?
   set +x
   cat log.txt
@@ -183,7 +183,7 @@ queryCommitted() {
     sleep $DELAY
     echo "Attempting to Query committed status on peer0.org${ORG}, Retry after $DELAY seconds."
     set -x
-    peer lifecycle chaincode querycommitted --channelID $CHANNEL_NAME --name fabcar >&log.txt
+    peer lifecycle chaincode querycommitted --channelID $CHANNEL_NAME --name nft >&log.txt
     res=$?
     set +x
 		test $res -eq 0 && VALUE=$(cat log.txt | grep -o '^Version: [0-9], Sequence: [0-9], Endorsement Plugin: escc, Validation Plugin: vscc')
@@ -211,7 +211,10 @@ chaincodeInvokeInit() {
   # peer (if join was successful), let's supply it directly as we know
   # it using the "-o" option
   set -x
-  peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n fabcar $PEER_CONN_PARMS --isInit -c '{"function":"initLedger","Args":[]}' >&log.txt
+
+  peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls $CORE_PEER_TLS_ENABLED --cafile $ORDERER_CA -C $CHANNEL_NAME -n nft $PEER_CONN_PARMS --isInit -c '{"function":"InitLedger","Args":[]}' >&log.txt
+
+#  
   res=$?
   set +x
   cat log.txt
@@ -232,7 +235,7 @@ chaincodeQuery() {
     sleep $DELAY
     echo "Attempting to Query peer0.org${ORG} ...$(($(date +%s) - starttime)) secs"
     set -x
-    peer chaincode query -C $CHANNEL_NAME -n fabcar -c '{"Args":["queryAllCars"]}' >&log.txt
+    peer chaincode query -C $CHANNEL_NAME -n nft -c '{"Args":["queryAllnft"]}' >&log.txt
     res=$?
     set +x
 		let rc=$res
@@ -281,7 +284,7 @@ checkCommitReadiness 2 "\"Org1MSP\": true" "\"Org2MSP\": true"
 ## now that we know for sure both orgs have approved, commit the definition
 commitChaincodeDefinition 1 2
 
-## query on both orgs to see that the definition committed successfully
+# ## query on both orgs to see that the definition committed successfully
 queryCommitted 1
 queryCommitted 2
 
@@ -292,6 +295,6 @@ sleep 10
 
 # Query chaincode on peer0.org1
 echo "Querying chaincode on peer0.org1..."
-chaincodeQuery 1
+# chaincodeQuery 1
 
 exit 0
