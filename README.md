@@ -1,6 +1,6 @@
 # hyperledger-fabric-2.0
 
-This project contain 5 orderer with 3 ca and 4 peers network.Still work in progess
+This project contain 5 orderer with 3 ca and 2 peers network. Now start in stage dev-03.
 
 ### Steps to run fabric
 
